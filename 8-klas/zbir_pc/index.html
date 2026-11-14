@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Інтерактивний тренажер: Збери ПК для навчання (8 клас)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Іконки -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #3b82f6;
+            border-radius: 4px;
+        }
+        .component-card {
+            transition: all 0.2s ease-in-out;
+        }
+        .component-card:hover {
+            transform: translateY(-2px);
+        }
+        .selected-card {
+            border-color: #3b82f6 !important;
+            background-color: rgba(59, 130, 246, 0.15) !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+    <!-- Шапка тренажера -->
+    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-blue-600 rounded-lg text-white font-bold text-xl">
+                    <i class="fa-solid fa-desktop"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight text-white">Збери ПК для навчання</h1>
+                    <p class="text-xs text-slate-400">Практичне завдання з інформатики • 8 клас</p>
+                </div>
+            </div>
+
+            <!-- Бюджет та параметри -->
+            <div class="flex items-center gap-4 bg-slate-800/80 px-4 py-2 rounded-xl border border-slate-700">
+                <div class="text-center">
+                    <span class="text-xs text-slate-400 block">Бюджет</span>
+                    <span id="budget-display" class="font-extrabold text-emerald-400 text-sm md:text-base">0 / 22 000 грн</span>
+                </div>
+                <div class="h-8 w-px bg-slate-700"></div>
+                <div class="text-center">
+                    <span class="text-xs text-slate-400 block">Енергоспоживання</span>
+                    <span id="power-display" class="font-bold text-amber-400 text-sm md:text-base">0 Вт</span>
+                </div>
+                <div class="h-8 w-px bg-slate-700"></div>
+                <div class="text-center">
+                    <span class="text-xs text-slate-400 block">Готовність</span>
+                    <span id="progress-display" class="font-bold text-blue-400 text-sm md:text-base">0%</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Основний контент -->
+    <main class="max-w-7xl mx-auto px-4 py-6 w-full flex-grow">
+        
+        <!-- Опис завдання -->
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-4 mb-6 shadow-lg backdrop-blur">
+            <div class="flex items-start gap-3">
+                <div class="text-amber-400 text-xl mt-0.5"><i class="fa-solid fa-lightbulb"></i></div>
+                <div class="text-sm text-slate-300">
+                    <strong class="text-white">Мета завдання:</strong> Зібрати оптимальний комп'ютер для <strong>навчання у школі</strong> (онлайн-уроки у Zoom/Teams, підготовка рефератів, програмування на Python, перегляд навчальних відео). Не перевищуй бюджет у <strong>22 000 грн</strong> і звертай увагу на сумісність деталей!
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Ліва колонка: Конструктор (Вибір деталей) -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Навігація по категоріях -->
+                <div class="flex overflow-x-auto gap-2 pb-2 custom-scrollbar border-b border-slate-800">
+                    <button onclick="switchTab('mobo')" id="tab-mobo" class="tab-btn px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap bg-blue-600 text-white flex items-center gap-2">
+                        <i class="fa-solid fa-microchip"></i> 1. Материнка
+                    </button>
+                    <button onclick="switchTab('cpu')" id="tab-cpu" class="tab-btn px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap bg-slate-800 text-slate-400 hover:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-brain"></i> 2. Процесор
+                    </button>
+                    <button onclick="switchTab('ram')" id="tab-ram" class="tab-btn px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap bg-slate-800 text-slate-400 hover:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-memory"></i> 3. ОЗП (RAM)
+                    </button>
+                    <button onclick="switchTab('storage')" id="tab-storage" class="tab-btn px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap bg-slate-800 text-slate-400 hover:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-hard-drive"></i> 4. Накопичувач
+                    </button>
+                    <button onclick="switchTab('gpu')" id="tab-gpu" class="tab-btn px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap bg-slate-800 text-slate-400 hover:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-gamepad"></i> 5. Відеокарта
+                    </button>
+                    <button onclick="switchTab('peripherals')" id="tab-peripherals" class="tab-btn px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap bg-slate-800 text-slate-400 hover:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-keyboard"></i> 6. Периферія
+                    </button>
+                </div>
+
+                <!-- Вкладка 1: Материнська плата -->
+                <div id="content-mobo" class="tab-content space-y-4">
+                    <h3 class="text-base font-semibold text-slate-200">Оберіть материнську плату (Основа ПК):</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="list-mobo"></div>
+                </div>
+
+                <!-- Вкладка 2: Процесор -->
+                <div id="content-cpu" class="tab-content hidden space-y-4">
+                    <h3 class="text-base font-semibold text-slate-200">Оберіть процесор (CPU):</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="list-cpu"></div>
+                </div>
+
+                <!-- Вкладка 3: Оперативна пам'ять -->
+                <div id="content-ram" class="tab-content hidden space-y-4">
+                    <h3 class="text-base font-semibold text-slate-200">Оберіть оперативну пам'ять (ОЗП / RAM):</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="list-ram"></div>
+                </div>
+
+                <!-- Вкладка 4: Жорсткий диск / SSD -->
+                <div id="content-storage" class="tab-content hidden space-y-4">
+                    <h3 class="text-base font-semibold text-slate-200">Оберіть накопичувач (Пам'ять для файлів):</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="list-storage"></div>
+                </div>
+
+                <!-- Вкладка 5: Відеокарта -->
+                <div id="content-gpu" class="tab-content hidden space-y-4">
+                    <h3 class="text-base font-semibold text-slate-200">Чи потрібна окрема графічна карта (GPU)?</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="list-gpu"></div>
+                </div>
+
+                <!-- Вкладка 6: Периферія -->
+                <div id="content-peripherals" class="tab-content hidden space-y-4">
+                    <h3 class="text-base font-semibold text-slate-200">Оберіть периферійні пристрої (Монітор, Миша, Клавіатура, Веб-камера):</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="list-peripherals"></div>
+                </div>
+
+            </div>
+
+            <!-- Права колонка: Стан збірки та підсумки -->
+            <div class="space-y-6">
+                <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-5 shadow-lg">
+                    <h2 class="text-lg font-bold text-white mb-4 flex items-center justify-between">
+                        <span><i class="fa-solid fa-list-check text-blue-400 mr-2"></i>Ваша конфігурація</span>
+                        <button onclick="resetBuild()" class="text-xs text-rose-400 hover:underline"><i class="fa-solid fa-rotate-left mr-1"></i>Скинути</button>
+                    </h2>
+                    
+                    <div class="space-y-3 text-sm" id="selected-summary">
+                        <!-- Динамічний список обраного -->
+                    </div>
+
+                    <!-- Попередження / Статус -->
+                    <div id="build-warnings" class="mt-4 space-y-2"></div>
+
+                    <button onclick="finishBuild()" id="submit-btn" disabled class="mt-6 w-full py-3 px-4 bg-emerald-600 opacity-50 cursor-not-allowed hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg transition duration-200 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-check-circle"></i> Завершити та перевірити
+                    </button>
+                </div>
+
+                <!-- Тест для оцінки знань (Вікторина) -->
+                <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-5">
+                    <h3 class="text-md font-bold text-white mb-3 flex items-center">
+                        <i class="fa-solid fa-graduation-cap text-amber-400 mr-2"></i> Експрес-вікторина (додаткові бали)
+                    </h3>
+                    <div id="quiz-container" class="space-y-4">
+                        <!-- Згенеровані питання -->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Модальне вікно результатів -->
+    <div id="modal-result" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div class="text-center space-y-2">
+                <div id="score-badge" class="inline-block p-4 bg-blue-600/20 text-blue-400 rounded-full text-4xl mb-2">
+                    <i class="fa-solid fa-award"></i>
+                </div>
+                <h2 class="text-2xl font-extrabold text-white">Результат збірки ПК</h2>
+                <p id="final-score" class="text-3xl font-black text-amber-400">12 / 12 балів</p>
+            </div>
+
+            <div class="space-y-3 bg-slate-800/80 p-4 rounded-xl border border-slate-700" id="result-details">
+                <!-- Детальний аналіз від викладача -->
+            </div>
+
+            <div class="flex justify-end gap-3 pt-2">
+                <button onclick="closeModal()" class="px-5 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-medium text-sm transition">
+                    Повернутися до редагування
+                </button>
+                <button onclick="window.print()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium text-sm transition flex items-center gap-2">
+                    <i class="fa-solid fa-print"></i> Роздрукувати / Зберегти PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Підвал -->
+    <footer class="bg-slate-900 border-t border-slate-800 py-4 text-center text-xs text-slate-500">
+        <p>Інтерактивний онлайн-тренажер для учнів 8 класу • Розділ: «Апаратне забезпечення комп'ютера»</p>
+    </footer>
+
+    <script>
+        // --- ДАНІ КОМПОНЕНТІВ ---
+        const componentsData = {
+            mobo: [
+                { id: 'mobo_b660', name: 'Материнська плата Asus Prime (Socket LGA1700)', price: 3800, socket: 'LGA1700', power: 30, type: 'DDR4', desc: 'Бюджетна, надійна плата для сучасних процесорів Intel.' },
+                { id: 'mobo_am4', name: 'Материнська плата Gigabyte (Socket AM4)', price: 3200, socket: 'AM4', power: 30, type: 'DDR4', desc: 'Чудова плата для процесорів AMD Ryzen.' },
+                { id: 'mobo_top', name: 'Ігрова материнська плата ROG Strix (Socket LGA1700)', price: 9500, socket: 'LGA1700', power: 50, type: 'DDR4', desc: 'Дорога плата з підсвічуванням та надлишковим охолодженням.' }
+            ],
+            cpu: [
+                { id: 'cpu_i3', name: 'Intel Core i3-12100 (з вбудованою графікою)', price: 4200, socket: 'LGA1700', power: 65, igpu: true, desc: '4 ядра / 8 потоків. Ідеальний баланс для навчання та роботи.' },
+                { id: 'cpu_ryzen5', name: 'AMD Ryzen 5 4600G (з вбудованою графікою Vega)', price: 3900, socket: 'AM4', power: 65, igpu: true, desc: '6 ядер. Потужне вбудоване відеоядро для всіх задач.' },
+                { id: 'cpu_i5_f', name: 'Intel Core i5-12400F (Без вбудованої графіки)', price: 5600, socket: 'LGA1700', power: 65, igpu: false, desc: '6 ядер. Вимагає обов\'язкового вибору окремої відеокарти!' },
+                { id: 'cpu_i9', name: 'Intel Core i9-13900K', price: 23000, socket: 'LGA1700', power: 250, igpu: true, desc: 'Надпотужний процесор. Дуже дорогий для звичайного навчання!' }
+            ],
+            ram: [
+                { id: 'ram_4', name: '4 ГБ DDR4 (1x4GB)', price: 600, capacity: 4, power: 5, desc: 'Мало для сучасних програм. Онлайн-уроки та браузер можуть гальмувати.' },
+                { id: 'ram_8', name: '8 ГБ DDR4 (2x4GB)', price: 1100, capacity: 8, power: 10, desc: 'Мінімально необхідний обсяг для комфотного навчання в 2026 році.' },
+                { id: 'ram_16', name: '16 ГБ DDR4 (2x8GB)', price: 1800, capacity: 16, power: 10, desc: 'Золота середина! Комп\'ютер працюватиме швидко і без затримок.' },
+                { id: 'ram_64', name: '64 ГБ DDR4 (4x16GB)', price: 6500, capacity: 64, power: 20, desc: 'Занадто багато для шкільних завдань, марна витрата бюджету.' }
+            ],
+            storage: [
+                { id: 'hdd_1tb', name: 'Жорсткий диск (HDD) 1 ТБ', price: 1700, type: 'HDD', capacity: 1000, power: 10, desc: 'Великий обсяг, але дуже повільне завантаження системи.' },
+                { id: 'ssd_512', name: 'Накопичувач SSD M.2 512 ГБ', price: 1600, type: 'SSD', capacity: 512, power: 5, desc: 'Оптимальний вибір! Миттєвий запуск Windows та програм.' },
+                { id: 'combo_storage', name: 'Комплект: SSD 256 ГБ (для ОС) + HDD 1 ТБ (для файлів)', price: 2600, type: 'COMBO', capacity: 1256, power: 15, desc: 'Швидка система + багато місця для навчання й фото.' }
+            ],
+            gpu: [
+                { id: 'gpu_none', name: 'Без окремої відеокарти (Використовувати вбудовану в CPU)', price: 0, power: 0, desc: 'Економно та достатньо для Zoom, YouTube, документів і програмування.' },
+                { id: 'gpu_gt1030', name: 'Дискретна відеокарта GeForce GT 1030 (2 ГБ)', price: 2800, power: 30, desc: 'Базова відеокарта для виведення зображення та простих ігор.' },
+                { id: 'gpu_rtx3060', name: 'Ігрова відеокарта GeForce RTX 3060 (12 ГБ)', price: 13000, power: 170, desc: 'Потужна картка для ігор та 3D-графіки. Значно збільшує ціну.' }
+            ],
+            peripherals: [
+                { id: 'per_std', name: 'Стандартний набор: Монітор 22" FHD + Клавіатура + Миша + Веб-камера з мікрофоном', price: 5500, power: 35, desc: 'Повний комплект, необхідний для навчання та дистанційних уроків.' },
+                { id: 'per_no_cam', name: 'Базовий набор: Монітор 22" + Клавіатура + Миша (Без веб-камери)', price: 4300, power: 35, desc: 'Немає камери для уроків, доведеться докуповувати окремо.' },
+                { id: 'per_gaming', name: 'Преміум набор: Вигнутий монітор 27" 144Гц + Механічна клавіатура + Ігрова миша + 4K Веб-камера', price: 14500, power: 65, desc: 'Дуже якісно, але займає левову частку бюджету.' }
+            ]
+        };
+
+        // ТЕСТОВІ ПИТАННЯ (Вікторина)
+        const quizQuestions = [
+            {
+                q: "1. Який пристрій відповідає за обробку інформації та є «мозком» ПК?",
+                options: ["Жорсткий диск", "Процесор (CPU)", "Оперативна пам'ять", "Блок живлення"],
+                answer: 1
+            },
+            {
+                q: "2. Що відбувається з даними в оперативній пам’яті (RAM) при вимкненні ПК?",
+                options: ["Зберігаються назавжди", "Очищаються (зникають)", "Переміщуються на флешку", "Стискаються в архів"],
+                answer: 1
+            },
+            {
+                q: "3. Навіщо для онлайн-навчання обов'язково потрібні веб-камера та мікрофон?",
+                options: ["Для швидшої роботи інтернету", "Для збереження файлів", "Для участі у відеоуроках", "Щоб ПК не перегрівався"],
+                answer: 2
+            },
+            {
+                q: "4. Який накопичувач забезпечує найшвидше завантаження операційної системи?",
+                options: ["SSD накопичувач", "HDD (Жорсткий диск)", "Оптичний диск DVD", "Дискета"],
+                answer: 0
+            }
+        ];
+
+        // Стан збірки
+        let state = {
+            mobo: null,
+            cpu: null,
+            ram: null,
+            storage: null,
+            gpu: null,
+            peripherals: null,
+            quizAnswers: {}
+        };
+
+        const maxBudget = 22000;
+
+        // Ініціалізація сторінки
+        window.onload = function() {
+            renderComponents();
+            renderQuiz();
+            updateSummary();
+        };
+
+        // Рендер деталей у вкладках
+        function renderComponents() {
+            for (let category in componentsData) {
+                const container = document.getElementById(`list-${category}`);
+                if (!container) continue;
+
+                container.innerHTML = componentsData[category].map(item => `
+                    <div id="card-${item.id}" onclick="selectComponent('${category}', '${item.id}')" 
+                         class="component-card cursor-pointer bg-slate-800 border-2 border-slate-700 hover:border-blue-500/50 p-4 rounded-xl flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-bold text-white text-sm md:text-base">${item.name}</h4>
+                                <span class="text-xs font-semibold px-2 py-1 bg-slate-700 text-emerald-400 rounded-md whitespace-nowrap">${item.price} грн</span>
+                            </div>
+                            <p class="text-xs text-slate-400 mb-3">${item.desc}</p>
+                        </div>
+                        <div class="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-slate-700/50">
+                            <span>${item.power ? '<i class="fa-solid fa-bolt text-amber-400 mr-1"></i>' + item.power + ' Вт' : ''}</span>
+                            <span class="text-blue-400 font-medium select-btn">Обрати <i class="fa-solid fa-chevron-right ml-1"></i></span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Перемикання вкладок
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('bg-slate-800', 'text-slate-400');
+            });
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+
+            const activeBtn = document.getElementById(`tab-${tabName}`);
+            const activeContent = document.getElementById(`content-${tabName}`);
+            
+            if (activeBtn && activeContent) {
+                activeBtn.classList.remove('bg-slate-800', 'text-slate-400');
+                activeBtn.classList.add('bg-blue-600', 'text-white');
+                activeContent.classList.remove('hidden');
+            }
+        }
+
+        // Вибір деталі
+        function selectComponent(category, id) {
+            const item = componentsData[category].find(c => c.id === id);
+            state[category] = item;
+
+            // Оновлення підсвічування карток
+            componentsData[category].forEach(c => {
+                const el = document.getElementById(`card-${c.id}`);
+                if (el) el.classList.remove('selected-card');
+            });
+            const selectedEl = document.getElementById(`card-${id}`);
+            if (selectedEl) selectedEl.classList.add('selected-card');
+
+            updateSummary();
+        }
+
+        // Оновлення бокової панелі з підсумками
+        function updateSummary() {
+            const summaryContainer = document.getElementById('selected-summary');
+            const warningsContainer = document.getElementById('build-warnings');
+            
+            let totalPrice = 0;
+            let totalPower = 0;
+            let filledCount = 0;
+            const categories = [
+                { key: 'mobo', label: 'Материнка', icon: 'fa-microchip' },
+                { key: 'cpu', label: 'Процесор', icon: 'fa-brain' },
+                { key: 'ram', label: 'ОЗП (RAM)', icon: 'fa-memory' },
+                { key: 'storage', label: 'Накопичувач', icon: 'fa-hard-drive' },
+                { key: 'gpu', label: 'Відеокарта', icon: 'fa-gamepad' },
+                { key: 'peripherals', label: 'Периферія', icon: 'fa-keyboard' }
+            ];
+
+            summaryContainer.innerHTML = categories.map(cat => {
+                const selected = state[cat.key];
+                if (selected) {
+                    totalPrice += selected.price;
+                    totalPower += selected.power || 0;
+                    filledCount++;
+                    return `
+                        <div class="flex justify-between items-center p-2 bg-slate-900/60 rounded-lg border border-slate-700/50">
+                            <span class="text-slate-300 text-xs flex items-center gap-2">
+                                <i class="fa-solid ${cat.icon} text-blue-400 w-4"></i> ${selected.name}
+                            </span>
+                            <span class="font-semibold text-emerald-400 text-xs">${selected.price} грн</span>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="flex justify-between items-center p-2 bg-slate-900/30 rounded-lg border border-dashed border-slate-700/50 text-slate-500 text-xs">
+                            <span class="flex items-center gap-2"><i class="fa-solid ${cat.icon} w-4"></i> ${cat.label} не обрано</span>
+                            <span>—</span>
+                        </div>
+                    `;
+                }
+            }).join('');
+
+            // Оновлення верхньої панелі
+            document.getElementById('budget-display').innerText = `${totalPrice.toLocaleString()} / ${maxBudget.toLocaleString()} грн`;
+            document.getElementById('budget-display').className = totalPrice > maxBudget ? 'font-extrabold text-rose-500 text-sm md:text-base animate-pulse' : 'font-extrabold text-emerald-400 text-sm md:text-base';
+            
+            document.getElementById('power-display').innerText = `${totalPower} Вт`;
+            
+            const progress = Math.round((filledCount / 6) * 100);
+            document.getElementById('progress-display').innerText = `${progress}%`;
+
+            // Перевірка помилок сумісності
+            let warnings = [];
+
+            if (state.mobo && state.cpu) {
+                if (state.mobo.socket !== state.cpu.socket) {
+                    warnings.push(`❌ <strong>Несумісність:</strong> Сокет материнської плати (${state.mobo.socket}) не збігається з процесором (${state.cpu.socket})!`);
+                }
+            }
+
+            if (state.cpu && !state.cpu.igpu && state.gpu && state.gpu.id === 'gpu_none') {
+                warnings.push(`❌ <strong>Немає відеосигналу:</strong> Процесор ${state.cpu.name} не має вбудованого відеоядра, тому обов'язково потрібна окрема відеокарта!`);
+            }
+
+            if (totalPrice > maxBudget) {
+                warnings.push(`⚠️ <strong>Перевищено бюджет:</strong> Переліміт на ${(totalPrice - maxBudget).toLocaleString()} грн.`);
+            }
+
+            warningsContainer.innerHTML = warnings.map(w => `
+                <div class="p-2.5 bg-rose-500/10 border border-rose-500/30 text-rose-300 rounded-lg text-xs">
+                    ${w}
+                </div>
+            `).join('');
+
+            // Кнопка завершення
+            const submitBtn = document.getElementById('submit-btn');
+            if (filledCount === 6 && warnings.filter(w => w.includes('❌')).length === 0) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                submitBtn.disabled = true;
+                submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        // Рендер вікторини
+        function renderQuiz() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = quizQuestions.map((q, qIndex) => `
+                <div class="space-y-2">
+                    <p class="text-xs font-semibold text-slate-300">${q.q}</p>
+                    <div class="grid grid-cols-1 gap-1">
+                        ${q.options.map((opt, oIndex) => `
+                            <label class="flex items-center space-x-2 text-xs bg-slate-900/50 p-2 rounded-lg border border-slate-700/50 hover:bg-slate-700/50 cursor-pointer">
+                                <input type="radio" name="quiz-${qIndex}" value="${oIndex}" onchange="saveQuizAnswer(${qIndex}, ${oIndex})" class="text-blue-600 focus:ring-0">
+                                <span class="text-slate-300">${opt}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function saveQuizAnswer(qIndex, oIndex) {
+            state.quizAnswers[qIndex] = oIndex;
+        }
+
+        // Скинути все
+        function resetBuild() {
+            state = { mobo: null, cpu: null, ram: null, storage: null, gpu: null, peripherals: null, quizAnswers: {} };
+            document.querySelectorAll('.component-card').forEach(c => c.classList.remove('selected-card'));
+            document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+            updateSummary();
+        }
+
+        // Розрахунок результату і показу модального вікна
+        function finishBuild() {
+            let score = 0;
+            let feedback = [];
+            let totalPrice = 0;
+
+            for (let k in componentsData) {
+                if (state[k]) totalPrice += state[k].price;
+            }
+
+            // 1. Оцінка сумісності та бюджету (до 6 балів)
+            let buildScore = 6;
+
+            if (totalPrice > maxBudget) {
+                buildScore -= 2;
+                feedback.push(`<li class="text-rose-400">⚠️ Перевищено бюджет на ${(totalPrice - maxBudget).toLocaleString()} грн. (-2 бали)</li>`);
+            } else {
+                feedback.push(`<li class="text-emerald-400">✅ Бюджет дотримано: ${totalPrice.toLocaleString()} грн. з 22 000 грн.</li>`);
+            }
+
+            // Оцінка доцільності деталей для навчання
+            if (state.ram.capacity < 8) {
+                buildScore -= 1;
+                feedback.push(`<li class="text-amber-400">⚠️ 4 ГБ ОЗП занадто мало для сучасних навчальних потреб. краще 8-16 ГБ.</li>`);
+            } else if (state.ram.capacity === 64) {
+                buildScore -= 1;
+                feedback.push(`<li class="text-amber-400">⚠️ 64 ГБ ОЗП — це надлишкові витрати для шкільного ПК.</li>`);
+            } else {
+                feedback.push(`<li class="text-emerald-400">✅ Чудовий вибір оперативної пам'яті (${state.ram.capacity} ГБ).</li>`);
+            }
+
+            if (state.storage.type === 'HDD') {
+                buildScore -= 1;
+                feedback.push(`<li class="text-amber-400">⚠️ Звичайний HDD диск буде повільно завантажувати систему. Рекомендується SSD.</li>`);
+            } else {
+                feedback.push(`<li class="text-emerald-400">✅ Обрано швидкісний SSD накопичувач.</li>`);
+            }
+
+            if (state.gpu.id === 'gpu_rtx3060') {
+                feedback.push(`<li class="text-amber-400">ℹ️ Потужна відеокарта RTX 3060 хороша для ігор, але суттєво здорожчує навчальний ПК.</li>`);
+            }
+
+            if (state.peripherals.id === 'per_no_cam') {
+                buildScore -= 1;
+                feedback.push(`<li class="text-amber-400">⚠️ Набір периферії без веб-камери ускладнить дистанційні уроки.</li>`);
+            } else {
+                feedback.push(`<li class="text-emerald-400">✅ Обрано повний периферійний комплект з веб-камерою та мікрофоном.</li>`);
+            }
+
+            if (buildScore < 0) buildScore = 0;
+
+            // 2. Оцінка вікторини (до 6 балів)
+            let quizScore = 0;
+            quizQuestions.forEach((q, idx) => {
+                if (state.quizAnswers[idx] === q.answer) {
+                    quizScore += 1.5;
+                }
+            });
+
+            const finalScoreTotal = Math.round(buildScore + quizScore);
+
+            // Вивід результатів
+            document.getElementById('final-score').innerText = `${finalScoreTotal} / 12 балів`;
+            
+            let scoreBadge = document.getElementById('score-badge');
+            if (finalScoreTotal >= 10) {
+                scoreBadge.className = "inline-block p-4 bg-emerald-500/20 text-emerald-400 rounded-full text-4xl mb-2";
+                scoreBadge.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+            } else if (finalScoreTotal >= 7) {
+                scoreBadge.className = "inline-block p-4 bg-amber-500/20 text-amber-400 rounded-full text-4xl mb-2";
+                scoreBadge.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+            } else {
+                scoreBadge.className = "inline-block p-4 bg-rose-500/20 text-rose-400 rounded-full text-4xl mb-2";
+                scoreBadge.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
+            }
+
+            document.getElementById('result-details').innerHTML = `
+                <h4 class="font-bold text-white text-sm border-b border-slate-700 pb-2">Аналіз вашої збірки ПК:</h4>
+                <ul class="text-xs space-y-1.5 py-2">
+                    ${feedback.join('')}
+                </ul>
+                <div class="border-t border-slate-700 pt-2 flex justify-between text-xs text-slate-300">
+                    <span>Бали за конфігурацію ПК: <strong>${buildScore} / 6</strong></span>
+                    <span>Бали за теорію (вікторина): <strong>${quizScore} / 6</strong></span>
+                </div>
+            `;
+
+            document.getElementById('modal-result').classList.remove('hidden');
+            document.getElementById('modal-result').classList.add('flex');
+        }
+
+        function closeModal() {
+            document.getElementById('modal-result').classList.add('hidden');
+            document.getElementById('modal-result').classList.remove('flex');
+        }
+    </script>
+</body>
+</html>
