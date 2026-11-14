@@ -96,12 +96,12 @@ p {
 }
 
 .pc-icon {
-    width: 220px;
+    width: 100%;
+    max-height: 360px;
     height: auto;
-    max-width: 100%;
     object-fit: contain;
-    border-radius: 12px;
-    margin-bottom: 18px;
+    border-radius: 14px;
+    margin-bottom: 20px;
 }
 
 .class-badge {
