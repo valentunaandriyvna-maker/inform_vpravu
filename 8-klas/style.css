@@ -82,6 +82,7 @@ p {
 
 /* Права частина (збоку): картка з ПК та написом "8 клас" */
 .side-banner {
+    flex: 0 0 calc(60% - 17.5px);
     display: flex;
     flex-direction: column;
     align-items: center;
