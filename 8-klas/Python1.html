@@ -1,0 +1,790 @@
+<!doctype html>
+<html lang="uk">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Python Quiz для 8 класу</title>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+        body {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100%;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .start-screen {
+            text-align: center;
+        }
+
+        .start-screen h2 {
+            color: #4facfe;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+        }
+
+        .start-screen p {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            color: #666;
+        }
+
+        .name-input {
+            margin-bottom: 30px;
+        }
+
+        .name-input label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .name-input input {
+            width: 100%;
+            max-width: 300px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1.1em;
+            transition: border-color 0.3s;
+        }
+
+        .name-input input:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .question-container {
+            display: none;
+        }
+
+        .progress-bar {
+            background: #f0f0f0;
+            border-radius: 10px;
+            height: 10px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .question-card {
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-left: 5px solid #4facfe;
+        }
+
+        .question-number {
+            color: #4facfe;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+
+        .question-text {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 25px;
+            color: #333;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        .options {
+            display: grid;
+            gap: 15px;
+        }
+
+        .option {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.1em;
+        }
+
+        .option:hover {
+            border-color: #4facfe;
+            background: #f0f8ff;
+        }
+
+        .option.selected {
+            border-color: #4facfe;
+            background: #4facfe;
+            color: white;
+        }
+
+        .option.correct {
+            border-color: #10b981;
+            background: #10b981;
+            color: white;
+        }
+
+        .option.incorrect {
+            border-color: #ef4444;
+            background: #ef4444;
+            color: white;
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .feedback.correct {
+            background: #d1fae5;
+            color: #065f46;
+            border: 2px solid #10b981;
+        }
+
+        .feedback.incorrect {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 2px solid #ef4444;
+        }
+
+        .results {
+            display: none;
+            text-align: center;
+        }
+
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            color: white;
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .leaderboard {
+            margin-top: 40px;
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .leaderboard h3 {
+            color: #4facfe;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #4facfe;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4facfe;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="container">
+   <header class="header">
+    <h1 id="quiz-title">Python Quiz для 8 класу</h1>
+    <p>Лінійні програми • Змінні • Введення/Виведення</p>
+   </header>
+   <main class="content">
+    <div id="start-screen" class="start-screen">
+     <h2 id="welcome-text">Ласкаво просимо до вікторини з Python! 🐍</h2>
+     <p>Перевірте свої знання з основ програмування на Python. Вікторина містить 10 питань про змінні, лінійні програми та роботу з введенням/виведенням даних.</p>
+     <div class="name-input"><label for="student-name">Введіть ваше ім'я:</label> <input type="text" id="student-name" placeholder="Ваше ім'я" maxlength="50">
+     </div><button id="start-btn" class="btn" onclick="startQuiz()"> <span id="start-button-text">Почати вікторину</span> </button>
+    </div>
+    <div id="question-container" class="question-container">
+     <div class="progress-bar">
+      <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+     </div>
+     <div class="question-card">
+      <div id="question-number" class="question-number"></div>
+      <div id="question-text" class="question-text"></div>
+      <div id="code-example" class="code-block hidden"></div>
+      <div id="options" class="options"></div>
+      <div id="feedback" class="feedback hidden"></div>
+     </div><button id="next-btn" class="btn hidden" onclick="nextQuestion()">Наступне питання</button> <button id="finish-btn" class="btn hidden" onclick="finishQuiz()"> <span class="loading hidden" id="finish-loading"></span> Завершити вікторину </button>
+    </div>
+    <div id="results" class="results">
+     <h2>Вітаємо з завершенням вікторини! 🎉</h2>
+     <div class="score-circle"><span id="final-score"></span>
+     </div>
+     <p id="score-message"></p><button class="btn" onclick="restartQuiz()">Пройти ще раз</button>
+     <div class="leaderboard">
+      <h3>🏆 Таблиця лідерів</h3>
+      <div id="leaderboard-list"></div>
+     </div>
+    </div>
+   </main>
+  </div>
+  <script>
+        const questions = [
+            {
+                question: "Яка команда використовується для виведення тексту на екран в Python?",
+                code: null,
+                options: ["echo", "print", "write", "output"],
+                correct: 1,
+                explanation: "Функція print() використовується для виведення інформації на екран."
+            },
+            {
+                question: "Що буде виведено на екран після виконання цього коду?",
+                code: `name = "Олексій"
+age = 14
+print("Мене звати", name, "і мені", age, "років")`,
+                options: [
+                    "Мене звати Олексій і мені 14 років",
+                    "name age",
+                    "Мене звати name і мені age років",
+                    "Помилка виконання"
+                ],
+                correct: 0,
+                explanation: "Функція print() виводить значення змінних, а не їх імена."
+            },
+            {
+                question: "Яка функція використовується для введення даних від користувача?",
+                code: null,
+                options: ["get()", "input()", "read()", "scan()"],
+                correct: 1,
+                explanation: "Функція input() зчитує дані, введені користувачем з клавіатури."
+            },
+            {
+                question: "Що потрібно додати до коду, щоб перетворити введене число в ціле число?",
+                code: `age = input("Скільки вам років? ")
+# Тут потрібно щось додати
+print("Через рік вам буде", age + 1, "років")`,
+                options: [
+                    "age = str(age)",
+                    "age = int(age)",
+                    "age = float(age)",
+                    "Нічого додавати не потрібно"
+                ],
+                correct: 1,
+                explanation: "Функція int() перетворює рядок у ціле число, щоб можна було виконувати математичні операції."
+            },
+            {
+                question: "Яке значення буде в змінній result після виконання коду?",
+                code: `a = 10
+b = 3
+result = a // b`,
+                options: ["3.333", "3", "4", "13"],
+                correct: 1,
+                explanation: "Оператор // виконує цілочисельне ділення, повертаючи тільки цілу частину результату."
+            },
+            {
+                question: "Що виведе цей код?",
+                code: `x = 5
+y = 2
+print(x ** y)`,
+                options: ["7", "10", "25", "52"],
+                correct: 2,
+                explanation: "Оператор ** виконує піднесення до степеня. 5 в степені 2 дорівнює 25."
+            },
+            {
+                question: "Як правильно створити змінну з текстовим значенням?",
+                code: null,
+                options: [
+                    'message = Привіт',
+                    'message = "Привіт"',
+                    'message = (Привіт)',
+                    'string message = "Привіт"'
+                ],
+                correct: 1,
+                explanation: "Текстові значення (рядки) в Python обов'язково беруться в лапки."
+            },
+            {
+                question: "Що буде результатом виконання цього коду?",
+                code: `num1 = "10"
+num2 = "20"
+result = num1 + num2
+print(result)`,
+                options: ["30", "1020", "Помилка", "10 + 20"],
+                correct: 1,
+                explanation: "Коли ми додаємо рядки, вони з'єднуються (конкатенуються), а не додаються математично."
+            },
+            {
+                question: "Яка команда правильно зчитує число з плаваючою точкою від користувача?",
+                code: null,
+                options: [
+                    'number = input("Введіть число: ")',
+                    'number = float(input("Введіть число: "))',
+                    'number = int(input("Введіть число: "))',
+                    'number = str(input("Введіть число: "))'
+                ],
+                correct: 1,
+                explanation: "Для роботи з числами з плаваючою точкою потрібно використовувати float()."
+            },
+            {
+                question: "Що виведе останній рядок коду?",
+                code: `name = "Python"
+version = 3.9
+print("Мова програмування:", name)
+print("Версія:", version)
+print(name, "версії", version, "- чудова мова!")`,
+                options: [
+                    "Python версії 3.9 - чудова мова!",
+                    "name версії version - чудова мова!",
+                    "Мова програмування: Python",
+                    "Помилка виконання"
+                ],
+                correct: 0,
+                explanation: "Функція print() може приймати кілька аргументів і виводить їх через пробіл."
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let studentName = "";
+        let selectedAnswer = null;
+        let quizData = [];
+
+        // Config for editable features
+        const defaultConfig = {
+            quiz_title: "Python Quiz для 8 класу",
+            welcome_text: "Ласкаво просимо до вікторини з Python! 🐍",
+            start_button_text: "Почати вікторину",
+            background_color: "#667eea",
+            surface_color: "#ffffff",
+            text_color: "#333333",
+            primary_action_color: "#4facfe",
+            secondary_action_color: "#00f2fe",
+            font_family: "Segoe UI",
+            font_size: 16
+        };
+
+        // Data SDK handler
+        const dataHandler = {
+            onDataChanged(data) {
+                quizData = data;
+                updateLeaderboard();
+            }
+        };
+
+        // Element SDK implementation
+        async function onConfigChange(config) {
+            const quizTitle = config.quiz_title || defaultConfig.quiz_title;
+            const welcomeText = config.welcome_text || defaultConfig.welcome_text;
+            const startButtonText = config.start_button_text || defaultConfig.start_button_text;
+            const backgroundColor = config.background_color || defaultConfig.background_color;
+            const surfaceColor = config.surface_color || defaultConfig.surface_color;
+            const textColor = config.text_color || defaultConfig.text_color;
+            const primaryActionColor = config.primary_action_color || defaultConfig.primary_action_color;
+            const secondaryActionColor = config.secondary_action_color || defaultConfig.secondary_action_color;
+            const fontFamily = config.font_family || defaultConfig.font_family;
+            const fontSize = config.font_size || defaultConfig.font_size;
+
+            // Update text content
+            document.getElementById('quiz-title').textContent = quizTitle;
+            document.getElementById('welcome-text').textContent = welcomeText;
+            document.getElementById('start-button-text').textContent = startButtonText;
+
+            // Update colors
+            document.body.style.background = `linear-gradient(135deg, ${backgroundColor} 0%, #764ba2 100%)`;
+            document.querySelector('.container').style.background = surfaceColor;
+            document.body.style.color = textColor;
+            
+            // Update button colors
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(btn => {
+                btn.style.background = `linear-gradient(135deg, ${primaryActionColor} 0%, ${secondaryActionColor} 100%)`;
+            });
+
+            // Update font
+            const fontStack = `${fontFamily}, Arial, sans-serif`;
+            document.body.style.fontFamily = fontStack;
+            
+            // Update font sizes
+            document.body.style.fontSize = `${fontSize}px`;
+            document.querySelector('.header h1').style.fontSize = `${fontSize * 2.5}px`;
+            document.querySelector('.start-screen h2').style.fontSize = `${fontSize * 1.8}px`;
+        }
+
+        function mapToCapabilities(config) {
+            return {
+                recolorables: [
+                    {
+                        get: () => config.background_color || defaultConfig.background_color,
+                        set: (value) => {
+                            if (window.elementSdk) {
+                                window.elementSdk.setConfig({ background_color: value });
+                            }
+                        }
+                    },
+                    {
+                        get: () => config.surface_color || defaultConfig.surface_color,
+                        set: (value) => {
+                            if (window.elementSdk) {
+                                window.elementSdk.setConfig({ surface_color: value });
+                            }
+                        }
+                    },
+                    {
+                        get: () => config.text_color || defaultConfig.text_color,
+                        set: (value) => {
+                            if (window.elementSdk) {
+                                window.elementSdk.setConfig({ text_color: value });
+                            }
+                        }
+                    },
+                    {
+                        get: () => config.primary_action_color || defaultConfig.primary_action_color,
+                        set: (value) => {
+                            if (window.elementSdk) {
+                                window.elementSdk.setConfig({ primary_action_color: value });
+                            }
+                        }
+                    },
+                    {
+                        get: () => config.secondary_action_color || defaultConfig.secondary_action_color,
+                        set: (value) => {
+                            if (window.elementSdk) {
+                                window.elementSdk.setConfig({ secondary_action_color: value });
+                            }
+                        }
+                    }
+                ],
+                borderables: [],
+                fontEditable: {
+                    get: () => config.font_family || defaultConfig.font_family,
+                    set: (value) => {
+                        if (window.elementSdk) {
+                            window.elementSdk.setConfig({ font_family: value });
+                        }
+                    }
+                },
+                fontSizeable: {
+                    get: () => config.font_size || defaultConfig.font_size,
+                    set: (value) => {
+                        if (window.elementSdk) {
+                            window.elementSdk.setConfig({ font_size: value });
+                        }
+                    }
+                }
+            };
+        }
+
+        function mapToEditPanelValues(config) {
+            return new Map([
+                ["quiz_title", config.quiz_title || defaultConfig.quiz_title],
+                ["welcome_text", config.welcome_text || defaultConfig.welcome_text],
+                ["start_button_text", config.start_button_text || defaultConfig.start_button_text]
+            ]);
+        }
+
+        async function initializeApp() {
+            // Initialize Data SDK
+            if (window.dataSdk) {
+                const initResult = await window.dataSdk.init(dataHandler);
+                if (!initResult.isOk) {
+                    console.error("Failed to initialize data SDK");
+                }
+            }
+
+            // Initialize Element SDK
+            if (window.elementSdk) {
+                await window.elementSdk.init({
+                    defaultConfig,
+                    onConfigChange,
+                    mapToCapabilities,
+                    mapToEditPanelValues
+                });
+            }
+        }
+
+        function startQuiz() {
+            const nameInput = document.getElementById('student-name');
+            studentName = nameInput.value.trim();
+            
+            if (!studentName) {
+                nameInput.style.borderColor = '#ef4444';
+                nameInput.focus();
+                return;
+            }
+
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('question-container').style.display = 'block';
+            
+            currentQuestion = 0;
+            score = 0;
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = questions[currentQuestion];
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            
+            document.getElementById('progress-fill').style.width = progress + '%';
+            document.getElementById('question-number').textContent = `Питання ${currentQuestion + 1} з ${questions.length}`;
+            document.getElementById('question-text').textContent = question.question;
+            
+            const codeExample = document.getElementById('code-example');
+            if (question.code) {
+                codeExample.textContent = question.code;
+                codeExample.classList.remove('hidden');
+            } else {
+                codeExample.classList.add('hidden');
+            }
+            
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'option';
+                optionElement.textContent = option;
+                optionElement.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(optionElement);
+            });
+            
+            document.getElementById('feedback').classList.add('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+            document.getElementById('finish-btn').classList.add('hidden');
+            selectedAnswer = null;
+        }
+
+        function selectAnswer(answerIndex) {
+            if (selectedAnswer !== null) return;
+            
+            selectedAnswer = answerIndex;
+            const question = questions[currentQuestion];
+            const options = document.querySelectorAll('.option');
+            
+            options.forEach((option, index) => {
+                if (index === question.correct) {
+                    option.classList.add('correct');
+                } else if (index === answerIndex && index !== question.correct) {
+                    option.classList.add('incorrect');
+                } else {
+                    option.style.opacity = '0.5';
+                }
+            });
+            
+            const feedback = document.getElementById('feedback');
+            if (answerIndex === question.correct) {
+                score++;
+                feedback.className = 'feedback correct';
+                feedback.textContent = '✅ Правильно! ' + question.explanation;
+            } else {
+                feedback.className = 'feedback incorrect';
+                feedback.textContent = '❌ Неправильно. ' + question.explanation;
+            }
+            
+            feedback.classList.remove('hidden');
+            
+            if (currentQuestion < questions.length - 1) {
+                document.getElementById('next-btn').classList.remove('hidden');
+            } else {
+                document.getElementById('finish-btn').classList.remove('hidden');
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            showQuestion();
+        }
+
+        async function finishQuiz() {
+            const finishBtn = document.getElementById('finish-btn');
+            const loading = document.getElementById('finish-loading');
+            
+            finishBtn.disabled = true;
+            loading.classList.remove('hidden');
+            
+            // Save result to Data SDK
+            if (window.dataSdk && quizData.length < 999) {
+                const result = await window.dataSdk.create({
+                    student_name: studentName,
+                    score: score,
+                    total_questions: questions.length,
+                    completed_at: new Date().toISOString()
+                });
+                
+                if (!result.isOk) {
+                    console.error("Failed to save quiz result");
+                }
+            } else if (quizData.length >= 999) {
+                const feedback = document.createElement('div');
+                feedback.className = 'feedback incorrect';
+                feedback.textContent = 'Досягнуто максимальну кількість результатів (999). Результат не збережено.';
+                document.querySelector('.question-card').appendChild(feedback);
+            }
+            
+            finishBtn.disabled = false;
+            loading.classList.add('hidden');
+            
+            showResults();
+        }
+
+        function showResults() {
+            document.getElementById('question-container').style.display = 'none';
+            document.getElementById('results').style.display = 'block';
+            
+            const percentage = Math.round((score / questions.length) * 100);
+            document.getElementById('final-score').textContent = `${score}/${questions.length}`;
+            
+            let message = "";
+            if (percentage >= 90) {
+                message = `Відмінно! ${percentage}% - ви чудово знаєте Python! 🌟`;
+            } else if (percentage >= 70) {
+                message = `Добре! ${percentage}% - гарний результат! 👍`;
+            } else if (percentage >= 50) {
+                message = `Задовільно. ${percentage}% - варто повторити матеріал. 📚`;
+            } else {
+                message = `${percentage}% - рекомендуємо вивчити тему ще раз. 💪`;
+            }
+            
+            document.getElementById('score-message').textContent = message;
+        }
+
+        function updateLeaderboard() {
+            const leaderboardList = document.getElementById('leaderboard-list');
+            if (!leaderboardList) return;
+            
+            const sortedResults = [...quizData]
+                .sort((a, b) => b.score - a.score || new Date(b.completed_at) - new Date(a.completed_at))
+                .slice(0, 10);
+            
+            leaderboardList.innerHTML = '';
+            
+            if (sortedResults.length === 0) {
+                leaderboardList.innerHTML = '<p style="text-align: center; color: #666;">Поки що немає результатів</p>';
+                return;
+            }
+            
+            sortedResults.forEach((result, index) => {
+                const item = document.createElement('div');
+                item.className = 'leaderboard-item';
+                
+                const percentage = Math.round((result.score / result.total_questions) * 100);
+                const date = new Date(result.completed_at).toLocaleDateString('uk-UA');
+                
+                item.innerHTML = `
+                    <span>${index + 1}. ${result.student_name}</span>
+                    <span>${result.score}/${result.total_questions} (${percentage}%) - ${date}</span>
+                `;
+                
+                leaderboardList.appendChild(item);
+            });
+        }
+
+        function restartQuiz() {
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('start-screen').style.display = 'block';
+            document.getElementById('student-name').value = '';
+            currentQuestion = 0;
+            score = 0;
+            selectedAnswer = null;
+        }
+
+        // Initialize the app when page loads
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99f01f10764e5f09',t:'MTc2MzIyNDEwMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
