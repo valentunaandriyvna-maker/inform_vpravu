@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Tkinter — Інтерактивний тренажер (8 клас)</title>
+    <!-- Підключення Tailwind CSS для сучасного адаптивного дизайну -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Шрифт Inter та Fira Code для коду -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        python: {
+                            blue: '#3776AB',
+                            dark: '#1E293B',
+                            yellow: '#FFD43B',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Додаткові стилі для імітації класичного вікна Windows / Tkinter */
+        .tk-window-shadow {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.15);
+        }
+        .tk-button-3d {
+            border-top: 2px solid #ffffff;
+            border-left: 2px solid #ffffff;
+            border-right: 2px solid #7f7f7f;
+            border-bottom: 2px solid #7f7f7f;
+            transition: transform 0.05s ease;
+        }
+        .tk-button-3d:active {
+            border-top: 2px solid #7f7f7f;
+            border-left: 2px solid #7f7f7f;
+            border-right: 2px solid #ffffff;
+            border-bottom: 2px solid #ffffff;
+            transform: translateY(1px);
+        }
+        /* Плавна анімація вкладок */
+        .tab-content {
+            animation: fadeIn 0.25s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <!-- Верхня панель навігації -->
+    <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-yellow-400 flex items-center justify-center font-mono font-bold text-slate-900 text-lg shadow">
+                    tk
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-bold tracking-tight flex items-center gap-2">
+                        Python <span class="text-amber-400">Tkinter</span> Тренажер
+                        <span class="hidden sm:inline-block text-xs bg-blue-600/40 border border-blue-400/30 text-blue-200 px-2 py-0.5 rounded-full font-medium">8 клас</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">Вікно форми, розміри, колір фону, написи (Label) та кнопки (Button)</p>
+                </div>
+            </div>
+
+            <!-- Панель прогресу учня -->
+            <div class="flex items-center gap-4 bg-slate-800/80 px-4 py-2 rounded-xl border border-slate-700">
+                <div class="text-right">
+                    <div class="text-xs text-slate-400">Виконано завдань</div>
+                    <div class="text-sm font-bold text-emerald-400"><span id="score-counter">0</span> / <span id="total-tasks-counter">8</span></div>
+                </div>
+                <div class="w-24 sm:w-32 bg-slate-700 h-2.5 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="bg-gradient-to-r from-blue-500 to-emerald-400 h-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладки режимів роботи -->
+        <nav class="bg-slate-800 border-t border-slate-700/80">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex overflow-x-auto no-scrollbar gap-1 sm:gap-2 py-1.5">
+                <button onclick="switchTab('trainer')" id="tab-btn-trainer" class="tab-btn px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2 whitespace-nowrap bg-blue-600 text-white shadow">
+                    <span>🎯</span> Практичний тренажер
+                </button>
+                <button onclick="switchTab('sandbox')" id="tab-btn-sandbox" class="tab-btn px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2 whitespace-nowrap text-slate-300 hover:bg-slate-700 hover:text-white">
+                    <span>🧪</span> Конструктор вікна (Пісочниця)
+                </button>
+                <button onclick="switchTab('cheatsheet')" id="tab-btn-cheatsheet" class="tab-btn px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2 whitespace-nowrap text-slate-300 hover:bg-slate-700 hover:text-white">
+                    <span>📖</span> Шпаргалка з Tkinter
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Основний контейнер -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- ========================================================= -->
+        <!-- ВКЛАДКА 1: ПРАКТИЧНИЙ ТРЕНАЖЕР (8 ІНТЕРАКТИВНИХ ЗАВДАНЬ)   -->
+        <!-- ========================================================= -->
+        <section id="view-trainer" class="tab-content space-y-6">
+            
+            <!-- Навігація по завданнях (1..8) -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex flex-wrap items-center gap-2" id="task-pills">
+                    <!-- Кнопки номерів завдань генеруються через JS -->
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="prevTask()" id="btn-prev" class="px-3 py-1.5 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-100 text-sm font-medium disabled:opacity-40">
+                        ← Попереднє
+                    </button>
+                    <button onclick="nextTask()" id="btn-next" class="px-3 py-1.5 rounded-lg bg-slate-800 text-white hover:bg-slate-700 text-sm font-medium">
+                        Наступне →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Робоча область завдання: Зліва умова і код, Справа візуальний результат -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                
+                <!-- Ліва колонка: Умова, редактор/вибір відповіді, кнопки перевірки -->
+                <div class="lg:col-span-7 bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 space-y-5">
+                    <div class="flex items-center justify-between gap-2">
+                        <span id="task-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700">
+                            Завдання 1 з 8 • Базовий рівень
+                        </span>
+                        <span id="task-status-label" class="text-xs font-semibold text-slate-400">
+                            Очікує виконання
+                        </span>
+                    </div>
+
+                    <div>
+                        <h2 id="task-title" class="text-xl font-bold text-slate-900 mb-2">Створення головного вікна</h2>
+                        <p id="task-desc" class="text-slate-600 text-sm sm:text-base leading-relaxed">
+                            Опис завдання...
+                        </p>
+                    </div>
+
+                    <!-- Контейнер для інтерактивного завдання (заповнюється динамічно) -->
+                    <div id="task-workspace" class="bg-slate-900 text-slate-100 rounded-xl p-4 sm:p-5 font-mono text-sm sm:text-base leading-loose overflow-x-auto border border-slate-700 shadow-inner">
+                        <!-- Тут буде код з пропусками або інтерактивний редактор -->
+                    </div>
+
+                    <!-- Швидкі кнопки-підказки для вводу символів/атрибутів -->
+                    <div id="quick-snippets" class="flex flex-wrap gap-1.5 pt-1">
+                        <!-- Генеруються залежно від завдання -->
+                    </div>
+
+                    <!-- Повідомлення зворотного зв'язку (замість alert) -->
+                    <div id="feedback-box" class="hidden rounded-xl p-4 text-sm border transition-all">
+                        <div class="flex items-start gap-3">
+                            <span id="feedback-icon" class="text-xl">💡</span>
+                            <div class="space-y-1">
+                                <div id="feedback-title" class="font-bold"></div>
+                                <div id="feedback-text" class="leading-relaxed"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Кнопки дій -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100">
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="checkCurrentTask()" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm shadow-sm transition flex items-center gap-2">
+                                <span>✅</span> Перевірити код
+                            </button>
+                            <button onclick="showHint()" class="px-4 py-2.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 font-semibold text-sm transition flex items-center gap-2">
+                                <span>💡</span> Підказка
+                            </button>
+                        </div>
+                        <button onclick="resetCurrentTask()" class="px-3 py-2 rounded-xl text-slate-500 hover:text-slate-700 hover:bg-slate-100 text-xs font-medium transition">
+                            ↺ Скинути
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Права колонка: Живий попередній перегляд вікна Tkinter -->
+                <div class="lg:col-span-5 bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-slate-800 flex items-center gap-2 text-sm sm:text-base">
+                            <span>🖥️</span> Результат роботи програми
+                        </h3>
+                        <span class="text-xs text-slate-400 bg-slate-100 px-2.5 py-1 rounded-md font-mono">tk.Tk()</span>
+                    </div>
+
+                    <p class="text-xs text-slate-500">
+                        Тут відображається макет вікна, який створить твій код. Змінюй параметри та натискай «Перевірити код»!
+                    </p>
+
+                    <!-- Контейнер імітації робочого столу -->
+                    <div class="bg-gradient-to-br from-slate-200 to-slate-300 rounded-xl p-4 sm:p-6 min-h-[290px] flex items-center justify-center border border-slate-300 overflow-auto">
+                        
+                        <!-- Імітація вікна Tkinter -->
+                        <div id="preview-window" class="tk-window-shadow bg-[#f0f0f0] border border-slate-500 rounded-t-md overflow-hidden transition-all duration-300 flex flex-col" style="width: 300px; height: 200px;">
+                            <!-- Заголовок вікна (Title bar) -->
+                            <div class="bg-white border-b border-slate-300 px-2.5 py-1.5 flex items-center justify-between select-none shrink-0">
+                                <div class="flex items-center gap-2 overflow-hidden">
+                                    <!-- Іконка пір'їнки Tkinter -->
+                                    <span class="inline-flex items-center justify-center w-4 h-4 rounded bg-blue-600 text-white text-[10px] font-bold shrink-0">tk</span>
+                                    <span id="preview-title" class="text-xs font-medium text-slate-800 truncate">tk</span>
+                                </div>
+                                <div class="flex items-center gap-1.5 text-slate-400 text-xs shrink-0">
+                                    <span class="px-1">—</span>
+                                    <span class="px-1">□</span>
+                                    <span class="px-1 text-slate-600">✕</span>
+                                </div>
+                            </div>
+
+                            <!-- Робоча область форми (Canvas/Frame вікна) -->
+                            <div id="preview-body" class="flex-grow p-3 flex flex-col items-center justify-center gap-3 transition-colors duration-300 overflow-hidden" style="background-color: #f0f0f0;">
+                                <!-- Динамічні віджети (Label, Button) -->
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Інфо-панель поточних розмірів -->
+                    <div class="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+                        <div>
+                            <span class="text-slate-400">Розмір вікна:</span>
+                            <span id="preview-size-info" class="font-mono font-semibold text-slate-700 ml-1">300x200</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400">Фон форми (bg):</span>
+                            <span id="preview-bg-info" class="font-mono font-semibold text-slate-700 ml-1">#f0f0f0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Блок завершення всіх завдань -->
+            <div id="completion-banner" class="hidden bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-2xl p-6 shadow-lg">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div class="space-y-1 text-center md:text-left">
+                        <h3 class="text-xl sm:text-2xl font-extrabold">🎉 Вітаємо! Усі 8 завдань виконано!</h3>
+                        <p class="text-emerald-100 text-sm sm:text-base">
+                            Ти чудово опанував створення вікна, налаштування його розмірів, кольору фону, написів та кнопок у Python Tkinter.
+                        </p>
+                    </div>
+                    <div class="flex flex-wrap gap-3 shrink-0">
+                        <button onclick="switchTab('sandbox')" class="px-5 py-2.5 rounded-xl bg-white text-emerald-700 font-bold text-sm hover:bg-emerald-50 shadow transition">
+                            Перейти в Конструктор вікна →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- ВКЛАДКА 2: КОНСТРУКТОР ВІКНА (ІНТЕРАКТИВНА ПІСОЧНИЦЯ)     -->
+        <!-- ========================================================= -->
+        <section id="view-sandbox" class="tab-content hidden space-y-6">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6">
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold text-slate-900">🧪 Інтерактивний конструктор вікна Tkinter</h2>
+                    <p class="text-sm text-slate-600 mt-1">
+                        Змінюй параметри форми, тексту та кнопки за допомогою панелі керування — тренажер миттєво покаже вигляд програми та згенерує готовий Python-код, який можна скопіювати в IDLE або Thonny!
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- Панель налаштувань (4 колонки) -->
+                    <div class="lg:col-span-4 space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <h3 class="font-bold text-sm text-slate-800 uppercase tracking-wider border-b border-slate-200 pb-2">1. Параметри вікна (root)</h3>
+                        
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Заголовок вікна (title):</label>
+                            <input type="text" id="sb-title" value="Моя перша програма" oninput="updateSandbox()" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Ширина (px):</label>
+                                <input type="number" id="sb-width" value="360" min="200" max="500" step="10" oninput="updateSandbox()" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Висота (px):</label>
+                                <input type="number" id="sb-height" value="240" min="150" max="400" step="10" oninput="updateSandbox()" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Колір фону вікна (bg):</label>
+                            <select id="sb-bg" onchange="updateSandbox()" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg bg-white">
+                                <option value="lightblue">lightblue (світло-блакитний)</option>
+                                <option value="lightyellow">lightyellow (світло-жовтий)</option>
+                                <option value="lightgreen">lightgreen (світло-зелений)</option>
+                                <option value="lavender">lavender (лавандовий)</option>
+                                <option value="#1e293b">#1e293b (темно-синій HEX)</option>
+                                <option value="white">white (білий)</option>
+                            </select>
+                        </div>
+
+                        <h3 class="font-bold text-sm text-slate-800 uppercase tracking-wider border-b border-slate-200 pb-2 pt-2">2. Напис (Label)</h3>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Текст напису (text):</label>
+                            <input type="text" id="sb-label-text" value="Привіт, 8 клас!" oninput="updateSandbox()" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Колір тексту (fg):</label>
+                                <select id="sb-label-fg" onchange="updateSandbox()" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg bg-white">
+                                    <option value="darkblue">darkblue</option>
+                                    <option value="black">black</option>
+                                    <option value="red">red</option>
+                                    <option value="darkgreen">darkgreen</option>
+                                    <option value="yellow">yellow</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Розмір шрифту:</label>
+                                <select id="sb-label-size" onchange="updateSandbox()" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg bg-white">
+                                    <option value="12">12 pt</option>
+                                    <option value="14" selected>14 pt</option>
+                                    <option value="18">18 pt</option>
+                                    <option value="22">22 pt</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <h3 class="font-bold text-sm text-slate-800 uppercase tracking-wider border-b border-slate-200 pb-2 pt-2">3. Кнопка (Button)</h3>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Текст кнопки (text):</label>
+                            <input type="text" id="sb-btn-text" value="Натисни мене" oninput="updateSandbox()" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Фон кнопки (bg):</label>
+                                <select id="sb-btn-bg" onchange="updateSandbox()" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg bg-white">
+                                    <option value="gold">gold (золотий)</option>
+                                    <option value="orange">orange (помаранчевий)</option>
+                                    <option value="royalblue">royalblue (синій)</option>
+                                    <option value="limegreen">limegreen (лаймовий)</option>
+                                    <option value="crimson">crimson (малиновий)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Текст кнопки (fg):</label>
+                                <select id="sb-btn-fg" onchange="updateSandbox()" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg bg-white">
+                                    <option value="black">black</option>
+                                    <option value="white">white</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Візуальне вікно та згенерований код (8 колонок) -->
+                    <div class="lg:col-span-8 flex flex-col gap-5">
+                        <!-- Попередній перегляд -->
+                        <div class="bg-slate-200 rounded-xl p-6 flex items-center justify-center min-h-[280px] border border-slate-300 overflow-auto">
+                            <div id="sb-window" class="tk-window-shadow border border-slate-500 rounded-t-md overflow-hidden flex flex-col transition-all duration-200" style="width: 360px; height: 240px;">
+                                <div class="bg-white border-b border-slate-300 px-2.5 py-1.5 flex items-center justify-between shrink-0">
+                                    <div class="flex items-center gap-2 overflow-hidden">
+                                        <span class="inline-flex items-center justify-center w-4 h-4 rounded bg-blue-600 text-white text-[10px] font-bold">tk</span>
+                                        <span id="sb-preview-title" class="text-xs font-medium text-slate-800 truncate">Моя перша програма</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 text-slate-500 text-xs">
+                                        <span>—</span><span>□</span><span>✕</span>
+                                    </div>
+                                </div>
+                                <div id="sb-preview-body" class="flex-grow p-4 flex flex-col items-center justify-center gap-4" style="background-color: lightblue;">
+                                    <div id="sb-preview-label" style="color: darkblue; font-size: 18px; font-weight: bold;">Привіт, 8 клас!</div>
+                                    <button id="sb-preview-btn" onclick="sandboxBtnClick()" class="tk-button-3d px-4 py-1.5 text-sm font-medium cursor-pointer" style="background-color: gold; color: black;">
+                                        Натисни мене
+                                    </button>
+                                    <div id="sb-click-msg" class="text-xs font-semibold px-2.5 py-1 rounded bg-white/80 text-slate-800 opacity-0 transition-opacity">
+                                        Подія натискання кнопки спрацювала!
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Згенерований код Python -->
+                        <div class="bg-slate-900 rounded-xl p-4 text-slate-100 border border-slate-700">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Згенерований код Python:</span>
+                                <button onclick="copySandboxCode()" id="copy-btn" class="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition flex items-center gap-1.5">
+                                    <span>📋</span> Скопіювати код
+                                </button>
+                            </div>
+                            <pre id="sb-code-output" class="font-mono text-xs sm:text-sm text-emerald-300 overflow-x-auto leading-relaxed"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- ВКЛАДКА 3: ШПАРГАЛКА З TKINTER (ТЕОРІЯ ДЛЯ 8 КЛАСУ)        -->
+        <!-- ========================================================= -->
+        <section id="view-cheatsheet" class="tab-content hidden space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- Картка 1: Вікно форми -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 space-y-3">
+                    <div class="flex items-center gap-3">
+                        <span class="w-9 h-9 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold">1</span>
+                        <h3 class="text-lg font-bold text-slate-900">Створення та налаштування вікна</h3>
+                    </div>
+                    <p class="text-sm text-slate-600">
+                        Для роботи з графічним інтерфейсом підключають модуль <code class="bg-slate-100 px-1.5 py-0.5 rounded text-pink-600 font-mono">tkinter</code> та створюють головне вікно.
+                    </p>
+                    <pre class="bg-slate-900 text-slate-100 p-4 rounded-xl font-mono text-xs sm:text-sm overflow-x-auto leading-relaxed">from tkinter import *
+
+root = Tk()                  <span class="text-slate-400"># створення вікна</span>
+root.title("Назва вікна")   <span class="text-slate-400"># заголовок вікна</span>
+root.geometry("400x300")     <span class="text-slate-400"># ширина x висота</span>
+root.configure(bg="skyblue") <span class="text-slate-400"># колір фону форми</span>
+
+root.mainloop()              <span class="text-slate-400"># запуск циклу подій</span></pre>
+                </div>
+
+                <!-- Картка 2: Текстовий напис Label -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 space-y-3">
+                    <div class="flex items-center gap-3">
+                        <span class="w-9 h-9 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold">2</span>
+                        <h3 class="text-lg font-bold text-slate-900">Текстовий напис — Label</h3>
+                    </div>
+                    <p class="text-sm text-slate-600">
+                        Віджет <code class="bg-slate-100 px-1.5 py-0.5 rounded text-pink-600 font-mono">Label</code> виводить статичний текст у вікні. Щоб елемент з'явився на формі, використовують метод <code class="font-mono text-blue-600">.pack()</code> або <code class="font-mono text-blue-600">.place()</code>.
+                    </p>
+                    <pre class="bg-slate-900 text-slate-100 p-4 rounded-xl font-mono text-xs sm:text-sm overflow-x-auto leading-relaxed">lbl = Label(
+    root,                    <span class="text-slate-400"># батьківське вікно</span>
+    text="Привіт, світ!",    <span class="text-slate-400"># текст напису</span>
+    fg="darkblue",           <span class="text-slate-400"># колір літер (foreground)</span>
+    bg="lightyellow",        <span class="text-slate-400"># колір фону напису</span>
+    font=("Arial", 16)       <span class="text-slate-400"># шрифт і розмір</span>
+)
+lbl.pack(pady=10)            <span class="text-slate-400"># розміщення у вікні</span></pre>
+                </div>
+
+                <!-- Картка 3: Кнопка Button -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 space-y-3">
+                    <div class="flex items-center gap-3">
+                        <span class="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">3</span>
+                        <h3 class="text-lg font-bold text-slate-900">Кнопка — Button</h3>
+                    </div>
+                    <p class="text-sm text-slate-600">
+                        Віджет <code class="bg-slate-100 px-1.5 py-0.5 rounded text-pink-600 font-mono">Button</code> створює кнопку. Атрибут <code class="font-mono text-blue-600">command</code> вказує ім'я функції (без дужок!), яка виконається при натисканні.
+                    </p>
+                    <pre class="bg-slate-900 text-slate-100 p-4 rounded-xl font-mono text-xs sm:text-sm overflow-x-auto leading-relaxed">def say_hi():
+    lbl.configure(text="Кнопку натиснуто!")
+
+btn = Button(
+    root,
+    text="Натисни",          <span class="text-slate-400"># напис на кнопці</span>
+    bg="green",              <span class="text-slate-400"># колір фону кнопки</span>
+    fg="white",              <span class="text-slate-400"># колір тексту кнопки</span>
+    width=15,                <span class="text-slate-400"># ширина в символах</span>
+    command=say_hi           <span class="text-slate-400"># функція при кліку</span>
+)
+btn.pack()</pre>
+                </div>
+
+                <!-- Картка 4: Кольори та розміри -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 space-y-3">
+                    <div class="flex items-center gap-3">
+                        <span class="w-9 h-9 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold">4</span>
+                        <h3 class="text-lg font-bold text-slate-900">Важливі параметри та часті помилки</h3>
+                    </div>
+                    <ul class="text-sm text-slate-600 space-y-2.5 list-disc pl-5">
+                        <li>
+                            <strong>Розміри вікна:</strong> у <code class="font-mono text-pink-600">geometry("500x350")</code> пишеться латинська літера <code class="font-mono font-bold">x</code> (а не зірочка <code class="font-mono">*</code>), і значення береться в лапки!
+                        </li>
+                        <li>
+                            <strong>Кольори:</strong> можна вказувати англійською назвою (<code class="font-mono">"red"</code>, <code class="font-mono">"yellow"</code>, <code class="font-mono">"lightblue"</code>) або HEX-кодом (<code class="font-mono">"#FF5733"</code>).
+                        </li>
+                        <li>
+                            <strong>bg та fg:</strong> <code class="font-mono font-bold">bg</code> (background) — колір фону, <code class="font-mono font-bold">fg</code> (foreground) — колір тексту.
+                        </li>
+                        <li>
+                            <strong>Невидимі віджети:</strong> якщо створити <code class="font-mono">Label</code> або <code class="font-mono">Button</code>, але забути викликати <code class="font-mono">.pack()</code> або <code class="font-mono">.place()</code>, віджет не з'явиться у вікні!
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Футер -->
+    <footer class="bg-white border-t border-slate-200 py-4 mt-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
+            <div>Інтерактивний навчальний тренажер з інформатики (8 клас) • Тема: Графічний інтерфейс Python Tkinter</div>
+            <div>Працює автономно у браузері без реєстрації</div>
+        </div>
+    </footer>
+
+    <!-- ========================================================= -->
+    <!-- ЛОГІКА ТРЕНАЖЕРА НА JAVASCRIPT                            -->
+    <!-- ========================================================= -->
+    <script>
+        /**
+         * База завдань тренажера (8 завдань: від створення вікна до повної форми з кнопкою та подією)
+         */
+        const tasks = [
+            {
+                id: 1,
+                level: "Рівень 1 • Вікно форми",
+                title: "Створення головного вікна та його заголовок",
+                description: "Доповни код так, щоб створити головне вікно програми та встановити для нього заголовок «Мій проєкт».",
+                snippets: ["Tk()", "title", "mainloop()"],
+                hint: "Для створення вікна використовується функція Tk(), а заголовок задається методом title(\"...\"). У кінці обов'язково запускаємо головний цикл mainloop().",
+                template: [
+                    { type: "text", val: "from tkinter import *\n\nroot = " },
+                    { type: "input", id: "in1", width: 7, placeholder: "????" },
+                    { type: "text", val: "\nroot." },
+                    { type: "input", id: "in2", width: 8, placeholder: "?????" },
+                    { type: "text", val: "(\"Мій проєкт\")\n\nroot." },
+                    { type: "input", id: "in3", width: 12, placeholder: "??????????" }
+                ],
+                validate: (vals) => {
+                    const v1 = vals.in1.replace(/\s+/g, '');
+                    const v2 = vals.in2.trim();
+                    const v3 = vals.in3.replace(/\s+/g, '');
+                    if (v1 !== "Tk()") return { ok: false, msg: "Головне вікно створюється викликом класу Tk() (з великої літери Т та круглими дужками)." };
+                    if (v2 !== "title") return { ok: false, msg: "Метод для встановлення заголовка вікна називається title." };
+                    if (v3 !== "mainloop()") return { ok: false, msg: "Щоб вікно не закривалося відразу, в кінці викликають метод mainloop()." };
+                    return { ok: true, msg: "Чудово! Головне вікно створено, заголовок встановлено, а цикл подій запущено." };
+                },
+                renderPreview: (vals) => {
+                    const hasTk = vals.in1.replace(/\s+/g, '') === "Tk()";
+                    const hasTitle = vals.in2.trim() === "title";
+                    return {
+                        title: (hasTk && hasTitle) ? "Мій проєкт" : "tk",
+                        width: 300,
+                        height: 190,
+                        bg: "#f0f0f0",
+                        widgets: []
+                    };
+                }
+            },
+            {
+                id: 2,
+                level: "Рівень 1 • Розміри вікна",
+                title: "Задання розмірів вікна форми",
+                description: "Встанови розміри вікна шириною 400 пікселів і висотою 250 пікселів. Не забудь про правильний метод та формат запису розмірів!",
+                snippets: ["geometry", "\"400x250\"", "400x250"],
+                hint: "Розміри вікна задаються методом geometry(\"ширинаxвисота\"). Обов'язково використовуй латинську літеру x та лапки.",
+                template: [
+                    { type: "text", val: "from tkinter import *\n\nwin = Tk()\nwin.title(\"Розміри вікна\")\nwin." },
+                    { type: "input", id: "in1", width: 11, placeholder: "метод" },
+                    { type: "text", val: "(" },
+                    { type: "input", id: "in2", width: 12, placeholder: "\"ШxВ\"" },
+                    { type: "text", val: ")\nwin.mainloop()" }
+                ],
+                validate: (vals) => {
+                    const v1 = vals.in1.trim();
+                    const v2 = vals.in2.trim().replace(/'/g, '"');
+                    if (v1 !== "geometry") return { ok: false, msg: "Для зміни розмірів вікна у tkinter використовується метод geometry." };
+                    if (v2 === "400x250") return { ok: false, msg: "Не забудь взяти розмір \"400x250\" у лапки, адже метод geometry приймає рядок!" };
+                    if (v2 !== "\"400x250\"") return { ok: false, msg: "Перевір формат: має бути \"400x250\" (ширина 400, латинська літера x, висота 250 у лапках)." };
+                    return { ok: true, msg: "Правильно! Вікно набуло розмірів 400×250 пікселів." };
+                },
+                renderPreview: (vals) => {
+                    const isGeom = vals.in1.trim() === "geometry";
+                    const cleanSize = vals.in2.trim().replace(/['"]/g, '');
+                    const match = cleanSize.match(/^(\d+)x(\d+)$/i);
+                    let w = 300, h = 190;
+                    if (isGeom && match) {
+                        w = Math.min(Math.max(parseInt(match[1]), 180), 440);
+                        h = Math.min(Math.max(parseInt(match[2]), 140), 320);
+                    }
+                    return {
+                        title: "Розміри вікна",
+                        width: w,
+                        height: h,
+                        bg: "#f0f0f0",
+                        widgets: []
+                    };
+                }
+            },
+            {
+                id: 3,
+                level: "Рівень 1 • Колір фону",
+                title: "Зміна кольору фону форми",
+                description: "Зроби фон вікна світло-жовтим, вказавши параметр фону та назву кольору lightyellow.",
+                snippets: ["bg", "\"lightyellow\"", "configure"],
+                hint: "Колір фону у tkinter позначається скороченням bg (від англ. background). Назва кольору передається як рядок у лапках.",
+                template: [
+                    { type: "text", val: "from tkinter import *\n\nroot = Tk()\nroot.title(\"Кольорова форма\")\nroot.geometry(\"340x210\")\nroot.configure(" },
+                    { type: "input", id: "in1", width: 4, placeholder: "??" },
+                    { type: "text", val: "=" },
+                    { type: "input", id: "in2", width: 15, placeholder: "\"колір\"" },
+                    { type: "text", val: ")\nroot.mainloop()" }
+                ],
+                validate: (vals) => {
+                    const v1 = vals.in1.trim();
+                    const v2 = vals.in2.trim().replace(/'/g, '"').toLowerCase();
+                    if (v1 !== "bg" && v1 !== "background") return { ok: false, msg: "Параметр кольору фону називається bg (або background)." };
+                    if (v2 !== "\"lightyellow\"") return { ok: false, msg: "Значення кольору має бути \"lightyellow\" (у лапках)." };
+                    return { ok: true, msg: "Супер! Фон форми став приємного світло-жовтого кольору." };
+                },
+                renderPreview: (vals) => {
+                    const validParam = ["bg", "background"].includes(vals.in1.trim());
+                    const rawColor = vals.in2.trim().replace(/['"]/g, '');
+                    return {
+                        title: "Кольорова форма",
+                        width: 340,
+                        height: 210,
+                        bg: (validParam && rawColor) ? rawColor : "#f0f0f0",
+                        widgets: []
+                    };
+                }
+            },
+            {
+                id: 4,
+                level: "Рівень 2 • Текст на формі",
+                title: "Додавання текстового напису (Label)",
+                description: "Створи текстовий напис «Інформатика 8 клас» синього кольору (blue) та розмісти його у вікні за допомогою методу pack().",
+                snippets: ["Label", "text", "fg", "pack()"],
+                hint: "Віджет напису створюється класом Label. Текст задається параметром text, колір літер — fg, а для відображення у вікні викликають метод pack().",
+                template: [
+                    { type: "text", val: "from tkinter import *\n\nroot = Tk()\nroot.geometry(\"350x200\")\n\nlbl = " },
+                    { type: "input", id: "in1", width: 7, placeholder: "Віджет" },
+                    { type: "text", val: "(root, " },
+                    { type: "input", id: "in2", width: 6, placeholder: "????" },
+                    { type: "text", val: "=\"Інформатика 8 клас\", " },
+                    { type: "input", id: "in3", width: 4, placeholder: "??" },
+                    { type: "text", val: "=\"blue\")\nlbl." },
+                    { type: "input", id: "in4", width: 8, placeholder: "??????" },
+                    { type: "text", val: "\n\nroot.mainloop()" }
+                ],
+                validate: (vals) => {
+                    if (vals.in1.trim() !== "Label") return { ok: false, msg: "Для створення текстового напису використовується віджет Label (з великої літери)." };
+                    if (vals.in2.trim() !== "text") return { ok: false, msg: "Текст напису задається атрибутом text." };
+                    if (vals.in3.trim() !== "fg") return { ok: false, msg: "Колір тексту задається атрибутом fg (foreground)." };
+                    if (vals.in4.replace(/\s+/g, '') !== "pack()") return { ok: false, msg: "Щоб напис з'явився на формі, потрібно викликати метод розміщення pack()." };
+                    return { ok: true, msg: "Відмінно! Текстовий напис створено, пофарбовано та розміщено у вікні." };
+                },
+                renderPreview: (vals) => {
+                    const isLabel = vals.in1.trim() === "Label";
+                    const isPacked = vals.in4.replace(/\s+/g, '') === "pack()";
+                    const fgColor = vals.in3.trim() === "fg" ? "blue" : "black";
+                    const widgets = [];
+                    if (isLabel && isPacked) {
+                        widgets.push({
+                            type: "label",
+                            text: "Інформатика 8 клас",
+                            fg: fgColor,
+                            bg: "transparent",
+                            fontSize: 16
+                        });
+                    }
+                    return {
+                        title: "tk",
+                        width: 350,
+                        height: 200,
+                        bg: "#f0f0f0",
+                        widgets
+                    };
+                }
+            },
+            {
+                id: 5,
+                level: "Рівень 2 • Кнопка на формі",
+                title: "Створення стилізованої кнопки (Button)",
+                description: "Додай на форму кнопку з написом «Старт», зеленим фоном (green) та білим кольором тексту (white).",
+                snippets: ["Button", "bg", "fg", "pack()"],
+                hint: "Кнопка створюється за допомогою Button(...). Фон кнопки — це bg, а колір тексту на ній — fg. Не забудь викликати btn.pack().",
+                template: [
+                    { type: "text", val: "from tkinter import *\n\nroot = Tk()\nroot.geometry(\"320x200\")\n\nbtn = " },
+                    { type: "input", id: "in1", width: 8, placeholder: "Віджет" },
+                    { type: "text", val: "(root, text=\"Старт\", " },
+                    { type: "input", id: "in2", width: 4, placeholder: "??" },
+                    { type: "text", val: "=\"green\", " },
+                    { type: "input", id: "in3", width: 4, placeholder: "??" },
+                    { type: "text", val: "=\"white\")\nbtn." },
+                    { type: "input", id: "in4", width: 8, placeholder: "??????" },
+                    { type: "text", val: "\n\nroot.mainloop()" }
+                ],
+                validate: (vals) => {
+                    if (vals.in1.trim() !== "Button") return { ok: false, msg: "Для створення кнопки використовується клас Button (з великої літери)." };
+                    if (vals.in2.trim() !== "bg") return { ok: false, msg: "Зелений колір \"green\" це фон кнопки, тому атрибут має бути bg." };
+                    if (vals.in3.trim() !== "fg") return { ok: false, msg: "Білий колір \"white\" це колір літер на кнопці, тому атрибут має бути fg." };
+                    if (vals.in4.replace(/\s+/g, '') !== "pack()") return { ok: false, msg: "Виклич метод pack(), щоб кнопка відобразилась у вікні." };
+                    return { ok: true, msg: "Чудова робота! Кнопка «Старт» із зеленим фоном та білим текстом готова." };
+                },
+                renderPreview: (vals) => {
+                    const isBtn = vals.in1.trim() === "Button";
+                    const isPacked = vals.in4.replace(/\s+/g, '') === "pack()";
+                    const widgets = [];
+                    if (isBtn && isPacked) {
+                        widgets.push({
+                            type: "button",
+                            text: "Старт",
+                            bg: vals.in2.trim() === "bg" ? "green" : "#e1e1e1",
+                            fg: vals.in3.trim() === "fg" ? "white" : "black"
+                        });
+                    }
+                    return {
+                        title: "tk",
+                        width: 320,
+                        height: 200,
+                        bg: "#f0f0f0",
+                        widgets
+                    };
+                }
+            },
+            {
+                id: 6,
+                level: "Рівень 2 • Пошук помилок",
+                title: "Виправ помилки учня в коді",
+                description: "Учень намагався створити вікно розміром 360x220 із блакитним фоном lightblue та написом «Успіх!», але припустився 3 помилок. Виправ виділені поля!",
+                snippets: ["360x220", "bg", "pack()"],
+                hint: "1) У geometry замість зірочки * має бути літера x; 2) Замість color використовується bg; 3) У кінці потрібен метод pack(), а не show().",
+                template: [
+                    { type: "text", val: "from tkinter import *\n\nroot = Tk()\nroot.geometry(\"" },
+                    { type: "input", id: "in1", width: 9, value: "360*220" },
+                    { type: "text", val: "\")\nroot.configure(" },
+                    { type: "input", id: "in2", width: 7, value: "color" },
+                    { type: "text", val: "=\"lightblue\")\n\nlbl = Label(root, text=\"Успіх!\", font=(\"Arial\", 16))\nlbl." },
+                    { type: "input", id: "in3", width: 8, value: "show()" },
+                    { type: "text", val: "\n\nroot.mainloop()" }
+                ],
+                validate: (vals) => {
+                    if (vals.in1.trim() !== "360x220") return { ok: false, msg: "Помилка в розмірах: замість «360*220» потрібно написати «360x220» (латинська літера x)." };
+                    if (vals.in2.trim() !== "bg") return { ok: false, msg: "У tkinter немає параметра color для вікна — використовуй bg." };
+                    if (vals.in3.replace(/\s+/g, '') !== "pack()") return { ok: false, msg: "Методу show() не існує — для розміщення напису використовуй pack()." };
+                    return { ok: true, msg: "Браво! Ти знайшов і виправив усі три синтаксичні помилки." };
+                },
+                renderPreview: (vals) => {
+                    const validSize = vals.in1.trim() === "360x220";
+                    const validBg = vals.in2.trim() === "bg";
+                    const validPack = vals.in3.replace(/\s+/g, '') === "pack()";
+                    return {
+                        title: "tk",
+                        width: validSize ? 360 : 260,
+                        height: validSize ? 220 : 160,
+                        bg: validBg ? "lightblue" : "#f0f0f0",
+                        widgets: validPack ? [{ type: "label", text: "Успіх!", fg: "black", fontSize: 18 }] : []
+                    };
+                }
+            },
+            {
+                id: 7,
+                level: "Рівень 3 • Взаємодія (Подія)",
+                title: "Прив'язка функції до кнопки (command)",
+                description: "Зроби так, щоб при натисканні на кнопку «Змінити колір» викликалася функція change_bg, яка змінює фон вікна на помаранчевий (orange).",
+                snippets: ["orange", "command", "change_bg"],
+                hint: "У функції change_bg вкажи bg=\"orange\". А у параметрах кнопки Button вкажи command=change_bg (обов'язково БЕЗ круглих дужок після назви функції!).",
+                template: [
+                    { type: "text", val: "from tkinter import *\n\ndef change_bg():\n    root.configure(bg=\"" },
+                    { type: "input", id: "in1", width: 9, placeholder: "колір" },
+                    { type: "text", val: "\")\n\nroot = Tk()\nroot.geometry(\"340x210\")\n\nbtn = Button(root, text=\"Змінити колір\", " },
+                    { type: "input", id: "in2", width: 9, placeholder: "атрибут" },
+                    { type: "text", val: "=" },
+                    { type: "input", id: "in3", width: 11, placeholder: "функція" },
+                    { type: "text", val: ")\nbtn.pack(pady=20)\n\nroot.mainloop()" }
+                ],
+                validate: (vals) => {
+                    const c = vals.in1.trim().replace(/['"]/g, '').toLowerCase();
+                    const attr = vals.in2.trim();
+                    const fn = vals.in3.trim();
+                    if (c !== "orange") return { ok: false, msg: "У функції change_bg вкажи колір orange." };
+                    if (attr !== "command") return { ok: false, msg: "Для прив'язки функції до натискання кнопки використовується параметр command." };
+                    if (fn === "change_bg()") return { ok: false, msg: "Увага! Назву функції у command=change_bg потрібно писати БЕЗ дужок (), інакше вона спрацює ще до натискання кнопки." };
+                    if (fn !== "change_bg") return { ok: false, msg: "Вкажи ім'я створеної вище функції: change_bg." };
+                    return { ok: true, msg: "Супер! Спробуй натиснути на кнопку «Змінити колір» у вікні праворуч — вона працює!" };
+                },
+                renderPreview: (vals) => {
+                    const c = vals.in1.trim().replace(/['"]/g, '').toLowerCase() || "orange";
+                    const ready = vals.in2.trim() === "command" && vals.in3.trim() === "change_bg";
+                    return {
+                        title: "tk",
+                        width: 340,
+                        height: 210,
+                        bg: "#f0f0f0",
+                        widgets: [
+                            {
+                                type: "button",
+                                text: "Змінити колір",
+                                bg: "#e1e1e1",
+                                fg: "black",
+                                onClick: () => {
+                                    if (ready) {
+                                        document.getElementById("preview-body").style.backgroundColor = c;
+                                        document.getElementById("preview-bg-info").textContent = c;
+                                    } else {
+                                        showFeedback(false, "Кнопка ще не підключена!", "Спочатку правильно заповни command=change_bg у коді.");
+                                    }
+                                }
+                            }
+                        ]
+                    };
+                }
+            },
+            {
+                id: 8,
+                level: "Рівень 3 • Підсумковий проєкт",
+                title: "Інтерактивна візитівка учня",
+                description: "Збери повноцінну програму: вікно із заголовком «Візитівка», розміром 380x240, фоном lavender, написом «Я вивчаю Python!» та кнопкою «Привітатись» із фоном gold.",
+                snippets: ["Візитівка", "380x240", "lavender", "Label", "Button", "gold"],
+                hint: "Заповни послідовно: 1) заголовок \"Візитівка\"; 2) розмір \"380x240\"; 3) фон \"lavender\"; 4) віджет Label; 5) віджет Button; 6) колір фону кнопки \"gold\".",
+                template: [
+                    { type: "text", val: "from tkinter import *\n\nroot = Tk()\nroot.title(\"" },
+                    { type: "input", id: "in1", width: 11, placeholder: "заголовок" },
+                    { type: "text", val: "\")\nroot.geometry(\"" },
+                    { type: "input", id: "in2", width: 9, placeholder: "ШxВ" },
+                    { type: "text", val: "\")\nroot.configure(bg=\"" },
+                    { type: "input", id: "in3", width: 10, placeholder: "фон" },
+                    { type: "text", val: "\")\n\nlbl = " },
+                    { type: "input", id: "in4", width: 7, placeholder: "напис" },
+                    { type: "text", val: "(root, text=\"Я вивчаю Python!\", bg=\"lavender\", font=(\"Arial\", 14))\nlbl.pack(pady=15)\n\nbtn = " },
+                    { type: "input", id: "in5", width: 8, placeholder: "кнопка" },
+                    { type: "text", val: "(root, text=\"Привітатись\", bg=\"" },
+                    { type: "input", id: "in6", width: 7, placeholder: "колір" },
+                    { type: "text", val: "\")\nbtn.pack()\n\nroot.mainloop()" }
+                ],
+                validate: (vals) => {
+                    if (vals.in1.trim() !== "Візитівка") return { ok: false, msg: "Вкажи заголовок вікна: Візитівка" };
+                    if (vals.in2.trim() !== "380x240") return { ok: false, msg: "Вкажи розміри вікна: 380x240" };
+                    if (vals.in3.trim().toLowerCase() !== "lavender") return { ok: false, msg: "Вкажи колір фону вікна: lavender" };
+                    if (vals.in4.trim() !== "Label") return { ok: false, msg: "Для текстового напису вкажи клас Label" };
+                    if (vals.in5.trim() !== "Button") return { ok: false, msg: "Для кнопки вкажи клас Button" };
+                    if (vals.in6.trim().toLowerCase() !== "gold") return { ok: false, msg: "Вкажи колір фону кнопки: gold" };
+                    return { ok: true, msg: "Фантастично! Ти успішно зібрав повноцінний графічний інтерфейс у Python Tkinter!" };
+                },
+                renderPreview: (vals) => {
+                    const title = vals.in1.trim() || "tk";
+                    const match = vals.in2.trim().match(/^(\d+)x(\d+)$/i);
+                    const w = match ? Math.min(Math.max(parseInt(match[1]), 200), 440) : 320;
+                    const h = match ? Math.min(Math.max(parseInt(match[2]), 150), 320) : 200;
+                    const bg = vals.in3.trim() || "#f0f0f0";
+                    const widgets = [];
+                    if (vals.in4.trim() === "Label") {
+                        widgets.push({ type: "label", text: "Я вивчаю Python!", fg: "black", fontSize: 16 });
+                    }
+                    if (vals.in5.trim() === "Button") {
+                        widgets.push({
+                            type: "button",
+                            text: "Привітатись",
+                            bg: vals.in6.trim() || "#e1e1e1",
+                            fg: "black",
+                            onClick: () => {
+                                showFeedback(true, "Привіт від Python Tkinter! 👋", "Твоя програма успішно відреагувала на натискання кнопки!");
+                            }
+                        });
+                    }
+                    return { title, width: w, height: h, bg, widgets };
+                }
+            }
+        ];
+
+        // Стан проходження тренажера
+        let currentTaskIdx = 0;
+        const completedTasks = new Set();
+        const userInputsState = {}; // збереження введених значень для кожного завдання
+
+        // Ініціалізація при завантаженні сторінки
+        window.onload = function() {
+            document.getElementById("total-tasks-counter").textContent = tasks.length;
+            renderTaskPills();
+            loadTask(0);
+            updateSandbox();
+        };
+
+        /**
+         * Перемикання між вкладками (Тренажер / Конструктор / Шпаргалка)
+         */
+        function switchTab(tabName) {
+            const views = ['trainer', 'sandbox', 'cheatsheet'];
+            views.forEach(v => {
+                document.getElementById(`view-${v}`).classList.add('hidden');
+                const btn = document.getElementById(`tab-btn-${v}`);
+                btn.classList.remove('bg-blue-600', 'text-white', 'shadow');
+                btn.classList.add('text-slate-300', 'hover:bg-slate-700', 'hover:text-white');
+            });
+
+            document.getElementById(`view-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-btn-${tabName}`);
+            activeBtn.classList.add('bg-blue-600', 'text-white', 'shadow');
+            activeBtn.classList.remove('text-slate-300', 'hover:bg-slate-700', 'hover:text-white');
+        }
+
+        /**
+         * Малювання кнопок швидкого переходу між завданнями (1..8)
+         */
+        function renderTaskPills() {
+            const container = document.getElementById("task-pills");
+            container.innerHTML = "";
+            tasks.forEach((t, idx) => {
+                const btn = document.createElement("button");
+                const isCurrent = idx === currentTaskIdx;
+                const isDone = completedTasks.has(t.id);
+
+                let classes = "w-9 h-9 rounded-xl font-bold text-sm transition flex items-center justify-center border ";
+                if (isCurrent) {
+                    classes += "bg-blue-600 text-white border-blue-600 shadow-sm scale-105";
+                } else if (isDone) {
+                    classes += "bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200";
+                } else {
+                    classes += "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100";
+                }
+
+                btn.className = classes;
+                btn.textContent = isDone && !isCurrent ? "✓" : t.id;
+                btn.title = t.title;
+                btn.onclick = () => loadTask(idx);
+                container.appendChild(btn);
+            });
+        }
+
+        /**
+         * Завантаження вибраного завдання у робочу область
+         */
+        function loadTask(idx) {
+            currentTaskIdx = idx;
+            const task = tasks[idx];
+
+            // Оновлення заголовків та індикаторів
+            document.getElementById("task-badge").textContent = `Завдання ${task.id} з ${tasks.length} • ${task.level}`;
+            document.getElementById("task-title").textContent = task.title;
+            document.getElementById("task-desc").textContent = task.description;
+
+            const statusLabel = document.getElementById("task-status-label");
+            if (completedTasks.has(task.id)) {
+                statusLabel.textContent = "✅ Виконано";
+                statusLabel.className = "text-xs font-bold text-emerald-600";
+            } else {
+                statusLabel.textContent = "⏳ Очікує виконання";
+                statusLabel.className = "text-xs font-semibold text-slate-400";
+            }
+
+            // Кнопки Назад/Далі
+            document.getElementById("btn-prev").disabled = idx === 0;
+            document.getElementById("btn-next").textContent = idx === tasks.length - 1 ? "Завершити" : "Наступне →";
+
+            // Сховати попереднє повідомлення зворотного зв'язку
+            hideFeedback();
+
+            // Побудова інтерактивного поля з кодом
+            const workspace = document.getElementById("task-workspace");
+            workspace.innerHTML = "";
+            const pre = document.createElement("div");
+            pre.className = "whitespace-pre-wrap break-words";
+
+            const savedVals = userInputsState[task.id] || {};
+
+            task.template.forEach(part => {
+                if (part.type === "text") {
+                    const span = document.createElement("span");
+                    span.textContent = part.val;
+                    pre.appendChild(span);
+                } else if (part.type === "input") {
+                    const input = document.createElement("input");
+                    input.type = "text";
+                    input.id = `field-${part.id}`;
+                    input.dataset.fieldId = part.id;
+                    input.autocomplete = "off";
+                    input.spellcheck = false;
+                    input.placeholder = part.placeholder || "";
+                    input.value = savedVals[part.id] !== undefined ? savedVals[part.id] : (part.value || "");
+                    input.style.width = `${Math.max(part.width, 6)}ch`;
+                    input.className = "mx-1 px-2 py-0.5 rounded bg-slate-800 border-b-2 border-amber-400 text-amber-300 font-mono font-semibold focus:outline-none focus:bg-slate-700 focus:border-emerald-400 text-center transition";
+                    
+                    // Живе оновлення прев'ю під час введення
+                    input.addEventListener("input", () => {
+                        saveCurrentInputs();
+                        updateTaskPreview();
+                    });
+                    // Перевірка по натисканню Enter
+                    input.addEventListener("keydown", (e) => {
+                        if (e.key === "Enter") checkCurrentTask();
+                    });
+
+                    pre.appendChild(input);
+                }
+            });
+
+            workspace.appendChild(pre);
+
+            // Кнопки швидкої вставки підказок-тегів
+            const snippetsBox = document.getElementById("quick-snippets");
+            snippetsBox.innerHTML = `<span class="text-xs text-slate-400 self-center mr-1">Швидка вставка:</span>`;
+            task.snippets.forEach(snip => {
+                const chip = document.createElement("button");
+                chip.type = "button";
+                chip.textContent = snip;
+                chip.className = "px-2.5 py-1 rounded-md bg-slate-100 hover:bg-blue-100 hover:text-blue-700 text-slate-700 font-mono text-xs border border-slate-200 transition";
+                chip.onclick = () => insertSnippetToEmptyInput(snip);
+                snippetsBox.appendChild(chip);
+            });
+
+            renderTaskPills();
+            updateTaskPreview();
+        }
+
+        /**
+         * Вставка підказки у перше порожнє поле вводу поточного завдання
+         */
+        function insertSnippetToEmptyInput(text) {
+            const inputs = document.querySelectorAll("#task-workspace input");
+            for (let inp of inputs) {
+                if (!inp.value.trim()) {
+                    inp.value = text;
+                    inp.focus();
+                    saveCurrentInputs();
+                    updateTaskPreview();
+                    return;
+                }
+            }
+            // Якщо всі заповнені, вставляємо в останнє активне або перше
+            if (inputs.length > 0) {
+                inputs[0].value = text;
+                inputs[0].focus();
+                saveCurrentInputs();
+                updateTaskPreview();
+            }
+        }
+
+        /**
+         * Зчитування значень усіх інпутів поточного завдання
+         */
+        function getCurrentValues() {
+            const vals = {};
+            const inputs = document.querySelectorAll("#task-workspace input");
+            inputs.forEach(inp => {
+                vals[inp.dataset.fieldId] = inp.value;
+            });
+            return vals;
+        }
+
+        function saveCurrentInputs() {
+            const task = tasks[currentTaskIdx];
+            userInputsState[task.id] = getCurrentValues();
+        }
+
+        /**
+         * Оновлення візуального макета вікна Tkinter справа
+         */
+        function updateTaskPreview() {
+            const task = tasks[currentTaskIdx];
+            const vals = getCurrentValues();
+            const state = task.renderPreview(vals);
+
+            const winEl = document.getElementById("preview-window");
+            const titleEl = document.getElementById("preview-title");
+            const bodyEl = document.getElementById("preview-body");
+
+            winEl.style.width = `${state.width}px`;
+            winEl.style.height = `${state.height}px`;
+            titleEl.textContent = state.title;
+            bodyEl.style.backgroundColor = state.bg;
+
+            document.getElementById("preview-size-info").textContent = `${state.width}x${state.height}`;
+            document.getElementById("preview-bg-info").textContent = state.bg;
+
+            // Очищення та рендер віджетів
+            bodyEl.innerHTML = "";
+            state.widgets.forEach(w => {
+                if (w.type === "label") {
+                    const div = document.createElement("div");
+                    div.textContent = w.text;
+                    div.style.color = w.fg || "black";
+                    div.style.fontSize = `${w.fontSize || 14}px`;
+                    div.style.fontWeight = "600";
+                    bodyEl.appendChild(div);
+                } else if (w.type === "button") {
+                    const btn = document.createElement("button");
+                    btn.textContent = w.text;
+                    btn.className = "tk-button-3d px-4 py-1 text-sm font-medium cursor-pointer";
+                    btn.style.backgroundColor = w.bg || "#e1e1e1";
+                    btn.style.color = w.fg || "black";
+                    if (w.onClick) btn.onclick = w.onClick;
+                    bodyEl.appendChild(btn);
+                }
+            });
+        }
+
+        /**
+         * Перевірка відповіді учня
+         */
+        function checkCurrentTask() {
+            const task = tasks[currentTaskIdx];
+            const vals = getCurrentValues();
+            saveCurrentInputs();
+
+            const result = task.validate(vals);
+            updateTaskPreview();
+
+            if (result.ok) {
+                completedTasks.add(task.id);
+                showFeedback(true, "Правильно! Завдання зараховано", result.msg);
+                updateProgress();
+                renderTaskPills();
+                document.getElementById("task-status-label").textContent = "✅ Виконано";
+                document.getElementById("task-status-label").className = "text-xs font-bold text-emerald-600";
+            } else {
+                showFeedback(false, "Є неточність у коді", result.msg);
+            }
+        }
+
+        function showHint() {
+            const task = tasks[currentTaskIdx];
+            showFeedback("hint", "Підказка до завдання", task.hint);
+        }
+
+        function resetCurrentTask() {
+            const task = tasks[currentTaskIdx];
+            delete userInputsState[task.id];
+            loadTask(currentTaskIdx);
+        }
+
+        function prevTask() {
+            if (currentTaskIdx > 0) loadTask(currentTaskIdx - 1);
+        }
+
+        function nextTask() {
+            if (currentTaskIdx < tasks.length - 1) {
+                loadTask(currentTaskIdx + 1);
+            } else if (completedTasks.size === tasks.length) {
+                document.getElementById("completion-banner").scrollIntoView({ behavior: "smooth" });
+            } else {
+                // Знайти перше невиконане завдання
+                const uncompletedIdx = tasks.findIndex(t => !completedTasks.has(t.id));
+                if (uncompletedIdx !== -1) loadTask(uncompletedIdx);
+            }
+        }
+
+        /**
+         * Показ повідомлення зворотного зв'язку
+         */
+        function showFeedback(type, title, text) {
+            const box = document.getElementById("feedback-box");
+            const icon = document.getElementById("feedback-icon");
+            const titleEl = document.getElementById("feedback-title");
+            const textEl = document.getElementById("feedback-text");
+
+            box.classList.remove("hidden", "bg-emerald-50", "border-emerald-300", "text-emerald-900", "bg-rose-50", "border-rose-300", "text-rose-900", "bg-amber-50", "border-amber-300", "text-amber-900");
+
+            if (type === true) {
+                box.classList.add("bg-emerald-50", "border-emerald-300", "text-emerald-900");
+                icon.textContent = "🎉";
+            } else if (type === "hint") {
+                box.classList.add("bg-amber-50", "border-amber-300", "text-amber-900");
+                icon.textContent = "💡";
+            } else {
+                box.classList.add("bg-rose-50", "border-rose-300", "text-rose-900");
+                icon.textContent = "⚠️";
+            }
+
+            titleEl.textContent = title;
+            textEl.textContent = text;
+        }
+
+        function hideFeedback() {
+            document.getElementById("feedback-box").classList.add("hidden");
+        }
+
+        /**
+         * Оновлення шкали прогресу
+         */
+        function updateProgress() {
+            const count = completedTasks.size;
+            const total = tasks.length;
+            const pct = Math.round((count / total) * 100);
+
+            document.getElementById("score-counter").textContent = count;
+            document.getElementById("progress-bar").style.width = `${pct}%`;
+
+            if (count === total) {
+                document.getElementById("completion-banner").classList.remove("hidden");
+            }
+        }
+
+        /**
+         * =========================================================
+         * ЛОГІКА ВКЛАДКИ 2: КОНСТРУКТОР ВІКНА (ПІСОЧНИЦЯ)
+         * =========================================================
+         */
+        function updateSandbox() {
+            const title = document.getElementById("sb-title").value || "tk";
+            const w = Math.min(Math.max(parseInt(document.getElementById("sb-width").value) || 300, 180), 500);
+            const h = Math.min(Math.max(parseInt(document.getElementById("sb-height").value) || 200, 140), 400);
+            const bg = document.getElementById("sb-bg").value;
+
+            const lblText = document.getElementById("sb-label-text").value;
+            const lblFg = document.getElementById("sb-label-fg").value;
+            const lblSize = document.getElementById("sb-label-size").value;
+
+            const btnText = document.getElementById("sb-btn-text").value;
+            const btnBg = document.getElementById("sb-btn-bg").value;
+            const btnFg = document.getElementById("sb-btn-fg").value;
+
+            // Оновлення прев'ю
+            const win = document.getElementById("sb-window");
+            win.style.width = `${w}px`;
+            win.style.height = `${h}px`;
+            document.getElementById("sb-preview-title").textContent = title;
+            document.getElementById("sb-preview-body").style.backgroundColor = bg;
+
+            const previewLbl = document.getElementById("sb-preview-label");
+            previewLbl.textContent = lblText;
+            previewLbl.style.color = lblFg;
+            previewLbl.style.fontSize = `${parseInt(lblSize) + 2}px`;
+
+            const previewBtn = document.getElementById("sb-preview-btn");
+            previewBtn.textContent = btnText;
+            previewBtn.style.backgroundColor = btnBg;
+            previewBtn.style.color = btnFg;
+
+            // Генерація Python-коду
+            const safeTitle = title.replace(/"/g, '\\"');
+            const safeLbl = lblText.replace(/"/g, '\\"');
+            const safeBtn = btnText.replace(/"/g, '\\"');
+
+            const code = `from tkinter import *
+
+def on_button_click():
+    lbl.configure(text="Кнопку натиснуто!")
+
+root = Tk()
+root.title("${safeTitle}")
+root.geometry("${w}x${h}")
+root.configure(bg="${bg}")
+
+lbl = Label(
+    root,
+    text="${safeLbl}",
+    fg="${lblFg}",
+    bg="${bg}",
+    font=("Arial", ${lblSize})
+)
+lbl.pack(pady=15)
+
+btn = Button(
+    root,
+    text="${safeBtn}",
+    bg="${btnBg}",
+    fg="${btnFg}",
+    font=("Arial", 12),
+    command=on_button_click
+)
+btn.pack(pady=10)
+
+root.mainloop()`;
+
+            document.getElementById("sb-code-output").textContent = code;
+        }
+
+        function sandboxBtnClick() {
+            const msg = document.getElementById("sb-click-msg");
+            msg.classList.remove("opacity-0");
+            setTimeout(() => msg.classList.add("opacity-0"), 2000);
+        }
+
+        function copySandboxCode() {
+            const codeText = document.getElementById("sb-code-output").textContent;
+            const textarea = document.createElement("textarea");
+            textarea.value = codeText;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textarea);
+
+            const btn = document.getElementById("copy-btn");
+            const origHTML = btn.innerHTML;
+            btn.innerHTML = "<span>✅</span> Скопійовано!";
+            btn.classList.replace("bg-blue-600", "bg-emerald-600");
+            setTimeout(() => {
+                btn.innerHTML = origHTML;
+                btn.classList.replace("bg-emerald-600", "bg-blue-600");
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
